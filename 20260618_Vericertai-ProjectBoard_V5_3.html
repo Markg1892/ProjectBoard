@@ -1,0 +1,3021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Project Board – VericertAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0B1F3A;--teal:#00B5AD;--teal2:#007F7A;--gold:#F0A500;
+  --light:#F4F7FB;--border:#D0DCE8;--muted:#7A8FA6;
+  --red:#E53E3E;--green:#38A169;--purple:#6B66FF;--white:#fff;
+}
+body{font-family:"DM Sans",sans-serif;background:var(--light);color:var(--navy);min-height:100vh;visibility:hidden;}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--navy);}
+.login-card{background:#fff;border-radius:16px;padding:36px 40px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo img{height:46px;}
+.login-title{font-family:"Syne",sans-serif;font-weight:800;font-size:1.15rem;color:var(--navy);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:22px;}
+.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.role-btn{padding:12px 6px;border-radius:10px;border:2px solid var(--border);background:#fff;cursor:pointer;text-align:center;transition:all .15s;font-family:"DM Sans",sans-serif;}
+.role-btn:hover{border-color:var(--teal);background:#f0fffe;}
+.role-btn.selected{border-color:var(--teal);background:#e6faf9;}
+.role-icon{font-size:1.6rem;margin-bottom:4px;}
+.role-label{font-family:"Syne",sans-serif;font-weight:700;font-size:.8rem;color:var(--navy);}
+.role-desc{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.fg label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.fg input,.fg select{padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:"DM Sans",sans-serif;font-size:.88rem;color:var(--navy);background:#fff;width:100%;}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--teal);}
+.btn-login{width:100%;padding:11px;background:var(--teal);color:#fff;border:none;border-radius:7px;font-family:"Syne",sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .15s;}
+.btn-login:hover{background:var(--teal2);}
+.login-err{color:var(--red);font-size:.78rem;text-align:center;margin-top:8px;display:none;}
+
+/* ── APP ── */
+#app{display:none;flex-direction:column;min-height:100vh;}
+header{background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.logo img{height:36px;width:auto;}
+.hdr-mid{font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;text-align:center;}
+.hdr-right{display:flex;gap:8px;align-items:center;}
+.user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:20px;padding:4px 12px 4px 8px;font-size:.76rem;color:rgba(255,255,255,.75);}
+.udot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.udot.admin{background:var(--gold);}
+.udot.teacher{background:var(--teal);}
+.udot.student{background:var(--purple);}
+
+/* ── BREADCRUMB NAV ── */
+.breadcrumb{display:flex;align-items:center;gap:6px;padding:10px 24px;background:#fff;border-bottom:1px solid var(--border);font-size:.8rem;flex-wrap:wrap;}
+.bc-item{color:var(--teal);cursor:pointer;font-weight:600;}
+.bc-item:hover{text-decoration:underline;}
+.bc-sep{color:var(--border);}
+.bc-cur{color:var(--navy);font-weight:600;}
+
+/* ── SCREENS ── */
+.screen{display:none;padding:22px 24px;max-width:1400px;margin:0 auto;width:100%;}
+.screen.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.sec-title{font-family:"Syne",sans-serif;font-weight:800;font-size:1.15rem;color:var(--navy);}
+.sec-sub{font-size:.8rem;color:var(--muted);margin-top:2px;}
+
+/* ── CARDS GRID ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:16px 18px;box-shadow:0 2px 8px rgba(11,31,58,.05);cursor:pointer;transition:all .18s;position:relative;}
+.card:hover{border-color:var(--teal);box-shadow:0 4px 20px rgba(0,181,173,.12);transform:translateY(-2px);}
+.card-icon{font-size:1.6rem;margin-bottom:8px;}
+.card-name{font-family:"Syne",sans-serif;font-weight:700;font-size:.95rem;color:var(--navy);margin-bottom:3px;}
+.card-sub{font-size:.78rem;color:var(--muted);margin-bottom:10px;}
+.card-meta{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--light);color:var(--muted);border:1px solid var(--border);}
+.badge.teal{background:#e6faf9;color:var(--teal2);border-color:#b2ebe9;}
+.badge.gold{background:#fff8e6;color:#9a6700;border-color:#f5d98b;}
+.badge.purple{background:#f0f0ff;color:var(--purple);border-color:#c7c6ff;}
+.new-card{background:#fff;border-radius:10px;border:2px dashed var(--border);padding:16px 18px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all .18s;color:var(--muted);font-weight:600;font-size:.88rem;min-height:100px;}
+.new-card:hover{border-color:var(--teal);color:var(--teal);background:#f0fffe;}
+.card-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px;}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;padding:3px 6px;border-radius:4px;transition:all .12s;}
+.icon-btn:hover{background:var(--light);color:var(--red);}
+
+/* ── PANEL ── */
+.panel{background:#fff;border-radius:10px;border:1px solid var(--border);padding:18px 20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(11,31,58,.05);}
+.panel-t{font-family:"Syne",sans-serif;font-weight:700;font-size:.88rem;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.panel-t::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block;flex-shrink:0;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* ── FORM ── */
+.fgg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.fgg label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.fgg input,.fgg textarea,.fgg select{padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:"DM Sans",sans-serif;font-size:.85rem;color:var(--navy);background:#fff;}
+.fgg input:focus,.fgg textarea:focus,.fgg select:focus{outline:none;border-color:var(--teal);}
+.fgg textarea{resize:vertical;}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 16px;border-radius:6px;font-family:"DM Sans",sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-t{background:var(--teal);color:#fff;}.btn-t:hover{background:var(--teal2);}
+.btn-o{background:transparent;border:1.5px solid var(--teal);color:var(--teal);}.btn-o:hover{background:var(--teal);color:#fff;}
+.btn-g{background:var(--gold);color:var(--navy);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-sm{padding:5px 12px;font-size:.74rem;}
+.btn-xs{padding:3px 9px;font-size:.7rem;}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;}
+th{background:var(--navy);color:#fff;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;}
+td{padding:7px 10px;border-bottom:1px solid var(--border);font-size:.83rem;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8fbfb;}
+td input,td select{width:100%;border:none;background:transparent;font-family:"DM Sans",sans-serif;font-size:.83rem;color:var(--navy);padding:2px 4px;border-radius:3px;}
+td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid var(--teal);}
+.del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.95rem;padding:2px 5px;border-radius:3px;}
+.del:hover{background:#fff0f0;color:var(--red);}
+
+/* ── TABS ── */
+.tab-bar{background:#0d2647;display:flex;padding:0 24px;border-top:1px solid rgba(255,255,255,.06);}
+.tab{padding:10px 16px;font-size:.72rem;font-weight:700;font-family:"Syne",sans-serif;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;}
+.tab:hover{color:#fff;}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px 16px;border-left:3px solid var(--teal);}
+.stat:nth-child(2){border-left-color:var(--gold);}
+.stat:nth-child(3){border-left-color:var(--purple);}
+.stat:nth-child(4){border-left-color:var(--green);}
+.stat-l{font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.stat-v{font-family:"Syne",sans-serif;font-size:1.7rem;font-weight:800;color:var(--navy);line-height:1.2;}
+.stat-s{font-size:.7rem;color:var(--muted);}
+
+/* ── KANBAN ── */
+.kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
+.kcol{background:var(--light);border-radius:8px;border:1px solid var(--border);overflow:hidden;}
+.kh{color:#fff;font-family:"Syne",sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;text-align:center;background:var(--navy);}
+.kh.g{background:var(--green);}.kh.p{background:var(--purple);}.kh.t{background:var(--teal2);}
+.kcards{padding:5px;min-height:65px;display:flex;flex-direction:column;gap:4px;}
+.kcard{background:#fff;border:1px solid var(--border);border-radius:5px;padding:5px 7px;font-size:.76rem;display:flex;align-items:center;justify-content:space-between;gap:3px;cursor:grab;}
+.kcard:hover{border-color:var(--teal);}
+.kadd{padding:4px 5px;display:flex;gap:4px;}
+.kadd input{flex:1;border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:.73rem;font-family:"DM Sans",sans-serif;background:#fff;color:var(--navy);}
+.kadd input:focus{outline:none;border-color:var(--teal);}
+.kadd button{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;}
+
+/* ── TEAM TAGS ── */
+.ttag{display:inline-flex;align-items:center;gap:5px;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 9px 3px 7px;font-size:.76rem;margin:2px;}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ttag button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.8rem;padding:0 0 0 3px;}
+.ttag button:hover{color:var(--red);}
+
+/* ── MEMBER CHIPS ── */
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 9px 3px 8px;font-size:.76rem;margin:2px;}
+.chip button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:0 0 0 3px;}
+.chip button:hover{color:var(--red);}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:28px 32px;width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-t{font-family:"Syne",sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:4px;}
+.modal-sub{font-size:.8rem;color:var(--muted);margin-bottom:20px;}
+.modal-acts{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
+
+/* ── WHITEBOARD ── */
+#wb-out{background:#fff;border-radius:10px;border:1px solid var(--border);padding:20px;}
+.wb-box{border:1.5px solid #ccc;border-radius:6px;padding:8px 10px;height:100%;}
+.wb-bt{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--teal2);margin-bottom:4px;}
+.wb-val{font-size:.78rem;line-height:1.6;}
+.wb-tbl{width:100%;border-collapse:collapse;table-layout:fixed;}
+.wb-tbl th{background:var(--navy);color:#fff;font-size:.62rem;padding:4px 6px;text-align:left;}
+.wb-tbl td{border:1px solid #ccc;padding:3px 6px;font-size:.72rem;word-break:break-word;}
+.wb-chip{background:var(--light);border:1px solid var(--border);border-radius:3px;padding:2px 5px;margin-bottom:3px;font-size:.7rem;}
+
+/* ── ADMIN TABLE ── */
+.admin-table td{font-size:.82rem;}
+.role-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600;}
+.role-tag.admin{background:#fff8e6;color:#9a6700;}
+.role-tag.teacher{background:#e6faf9;color:var(--teal2);}
+.role-tag.student{background:#f0f0ff;color:var(--purple);}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted);}
+.empty-icon{font-size:2.8rem;margin-bottom:12px;}
+.empty-title{font-family:"Syne",sans-serif;font-weight:700;font-size:1rem;color:var(--navy);margin-bottom:6px;}
+.empty-desc{font-size:.82rem;line-height:1.6;}
+
+/* ════════════════════════════════════════
+   IDEAS TAB STYLES
+════════════════════════════════════════ */
+.tab .tab-chip{display:inline-block;margin-left:5px;font-size:.6rem;padding:1px 5px;border-radius:8px;background:rgba(0,181,173,.3);color:var(--teal);font-weight:700;vertical-align:middle;}
+.tab-bar{flex-wrap:wrap;}
+.ib-zones{display:flex;flex-direction:column;gap:12px;}
+.ib-zone{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px 16px;box-shadow:0 2px 8px rgba(11,31,58,.05);}
+.ib-zone-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ib-zone-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ib-zone-title{font-family:"Syne",sans-serif;font-weight:700;font-size:.85rem;color:var(--navy);}
+.ib-zone-cnt{margin-left:auto;font-size:.7rem;color:var(--muted);background:var(--light);border:1px solid var(--border);border-radius:10px;padding:1px 8px;}
+.ib-zone-prompt{font-size:.78rem;color:var(--muted);margin-bottom:10px;padding:5px 10px;background:var(--light);border-left:3px solid var(--border);border-radius:0 4px 4px 0;}
+.ib-notes{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
+.ib-note{min-width:110px;max-width:160px;min-height:80px;padding:9px 10px;border-radius:8px;font-size:.78rem;line-height:1.55;color:#2C2C2A;border:1px solid rgba(0,0,0,.06);position:relative;word-break:break-word;}
+.ib-note-au{font-size:.68rem;margin-top:7px;opacity:.6;font-weight:600;}
+.ib-note-del{position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.25);font-size:.75rem;padding:1px 3px;border-radius:3px;display:none;}
+.ib-note:hover .ib-note-del{display:block;}
+.ib-note-del:hover{color:var(--red);background:rgba(229,62,62,.1);}
+.note-y{background:#FFF9C4;} .note-b{background:#DDEEFF;} .note-g{background:#D4F5E3;} .note-p{background:#FFE4F0;}
+.ib-add-btn{min-width:90px;min-height:80px;padding:8px;border-radius:8px;border:2px dashed var(--border);background:transparent;color:var(--muted);font-size:.76rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .15s;font-family:"DM Sans",sans-serif;}
+.ib-add-btn:hover{border-color:var(--teal);color:var(--teal);background:#f0fffe;}
+.ib-add-btn span{font-size:1.3rem;line-height:1;}
+.ib-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.ib-header-left{display:flex;align-items:center;gap:10px;}
+.ib-live-pill{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;padding:3px 10px;border-radius:10px;background:#e6faf9;color:var(--teal2);border:1px solid #b2ebe9;font-weight:600;}
+.ib-live-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:ibpulse 1.5s infinite;}
+@keyframes ibpulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ib-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.ib-stat{background:#fff;border-radius:8px;border:1px solid var(--border);padding:10px 12px;text-align:center;cursor:pointer;transition:all .18s;user-select:none;}
+.ib-stat:hover{border-color:var(--teal);box-shadow:0 4px 14px rgba(0,181,173,.12);transform:translateY(-1px);}
+.ib-stat.active-stat{border-color:var(--teal);background:#f0fffe;}
+/* Stat detail panel */
+.ib-stat-panel{background:#fff;border:1.5px solid var(--teal);border-radius:10px;padding:14px 16px;margin-bottom:14px;animation:fadeSlideDown .18s ease;}
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.ib-stat-panel-title{font-family:"Syne",sans-serif;font-weight:700;font-size:.82rem;color:var(--teal2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.ib-stat-panel-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:0 2px;line-height:1;}
+.ib-stat-panel-close:hover{color:var(--red);}
+.ib-panel-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.ib-panel-item:last-child{border-bottom:none;}
+.ib-panel-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.ib-panel-name{flex:1;font-weight:500;color:var(--navy);}
+.ib-panel-count{font-size:.75rem;color:var(--muted);background:var(--light);border:1px solid var(--border);border-radius:8px;padding:1px 8px;}
+.ib-panel-bar-wrap{flex:1;height:5px;background:var(--light);border-radius:3px;overflow:hidden;}
+.ib-panel-bar{height:5px;border-radius:3px;background:var(--teal);}
+.ib-stat-v{font-family:"Syne",sans-serif;font-size:1.8rem;font-weight:800;color:var(--navy);line-height:1;}
+.ib-stat-l{font-size:.66rem;color:var(--muted);margin-top:2px;}
+.ib-ai-wrap{margin-top:14px;display:none;}
+.ib-ai-box{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:.82rem;line-height:1.75;color:var(--navy);}
+.ib-ai-box strong{color:var(--navy);font-weight:700;}
+.ib-theme-chip{display:inline-block;margin:2px 3px 0 0;padding:2px 9px;border-radius:10px;font-size:.72rem;background:#e6faf9;color:var(--teal2);font-weight:600;border:1px solid #b2ebe9;}
+.ib-pr{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.78rem;}
+.ib-pr-n{width:120px;flex-shrink:0;}
+.ib-pr-bw{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.ib-pr-b{height:5px;border-radius:3px;background:var(--teal);}
+.ib-pr-v{width:28px;text-align:right;font-size:.74rem;color:var(--muted);}
+.ib-contrib-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.78rem;}
+.ib-contrib-row:last-child{border-bottom:none;}
+.ib-contrib-name{width:130px;flex-shrink:0;font-weight:500;}
+.ib-contrib-bw{flex:1;height:5px;background:var(--light);border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.ib-contrib-b{height:5px;border-radius:3px;background:var(--teal);}
+.ib-contrib-v{width:26px;text-align:right;color:var(--muted);}
+.ib-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:20px;font-size:.8rem;background:var(--teal);color:#fff;opacity:0;transition:opacity .25s;pointer-events:none;z-index:600;white-space:nowrap;}
+.ib-toast.show{opacity:1;}
+
+/* ── WISP STAGE TABS ── */
+.tab-bar{background:#0B1F3A;display:flex;padding:0;border-top:1px solid rgba(255,255,255,.06);overflow-x:auto;}
+.stage-tab{display:flex;align-items:center;gap:8px;padding:0 22px;height:52px;font-size:.72rem;font-weight:800;font-family:"Syne",sans-serif;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.38);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;position:relative;}
+.stage-tab:hover{color:rgba(255,255,255,.7);}
+.stage-tab.active{color:#fff;border-bottom-color:var(--teal);}
+.stage-tab .stnum{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;flex-shrink:0;transition:background .15s;}
+.stage-tab.active .stnum{background:var(--teal);color:#fff;}
+.stage-tab.done .stnum{background:var(--green);color:#fff;}
+.stage-tab.done{color:rgba(255,255,255,.55);}
+.stage-arrow{color:rgba(255,255,255,.15);font-size:.8rem;display:flex;align-items:center;}
+/* Sub-tabs inside a stage */
+.sub-tab-bar{display:flex;gap:2px;padding:10px 0 0 0;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.sub-tab{padding:6px 14px;font-size:.72rem;font-weight:700;font-family:"Syne",sans-serif;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .12s;border-radius:4px 4px 0 0;}
+.sub-tab:hover{color:var(--navy);background:var(--light);}
+.sub-tab.active{color:var(--teal2);border-bottom-color:var(--teal);background:#fff;}
+/* Stage content panels */
+.stage-panel{display:none;}.stage-panel.on{display:block;}
+/* End-of-stage check gate */
+.stage-gate{background:linear-gradient(135deg,#f0fffe 0%,#e6f7ff 100%);border:2px solid var(--teal);border-radius:12px;padding:20px 24px;margin:20px 0;}
+.stage-gate-title{font-family:"Syne",sans-serif;font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.stage-gate-sub{font-size:.8rem;color:var(--muted);margin-bottom:16px;}
+.gate-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.gate-check{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--navy);cursor:pointer;padding:6px 10px;border-radius:6px;transition:background .12s;}
+.gate-check:hover{background:rgba(0,181,173,.06);}
+.gate-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex-shrink:0;}
+.gate-check.checked-item{color:var(--teal2);text-decoration:line-through;opacity:.7;}
+.gate-progress{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.gate-progress-bar{height:6px;background:var(--teal);border-radius:3px;transition:width .3s;}
+.gate-btn-row{display:flex;gap:8px;align-items:center;}
+/* MoSCoW on kanban cards */
+.moscow-badge{font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
+.moscow-must{background:#FEE2E2;color:#991B1B;}
+.moscow-should{background:#FEF3C7;color:#92400E;}
+.moscow-could{background:#D1FAE5;color:#065F46;}
+.kcard{gap:5px;flex-wrap:wrap;}
+/* Stage progress strip */
+.wisp-flow{display:flex;align-items:center;gap:0;margin-bottom:20px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.wisp-step{flex:1;padding:10px 8px;text-align:center;font-size:.65rem;font-weight:700;font-family:"Syne",sans-serif;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-right:1px solid var(--border);cursor:pointer;transition:all .15s;position:relative;}
+.wisp-step:last-child{border-right:none;}
+.wisp-step.ws-active{background:var(--teal);color:#fff;}
+.wisp-step.ws-done{background:#f0fffe;color:var(--teal2);}
+.wisp-step.ws-done::after{content:"✓";position:absolute;top:4px;right:6px;font-size:.6rem;color:var(--teal);}
+.wisp-step-icon{font-size:1.1rem;display:block;margin-bottom:2px;}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN
+═══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><img id="login-logo" src="" alt="VericertAI"></div>
+    <div class="login-title">Student Project Board</div>
+    <div class="login-sub">Select your role to continue</div>
+    <div class="role-grid">
+      <div class="role-btn selected" id="rb-admin" onclick="selRole('admin')">
+        <div class="role-icon">🏫</div>
+        <div class="role-label">School Admin</div>
+        <div class="role-desc">Manage school</div>
+      </div>
+      <div class="role-btn" id="rb-teacher" onclick="selRole('teacher')">
+        <div class="role-icon">👩‍🏫</div>
+        <div class="role-label">Teacher</div>
+        <div class="role-desc">Manage classes</div>
+      </div>
+      <div class="role-btn" id="rb-student" onclick="selRole('student')">
+        <div class="role-icon">🎓</div>
+        <div class="role-label">Student</div>
+        <div class="role-desc">View my projects</div>
+      </div>
+    </div>
+    <div class="fg">
+      <label>School</label>
+      <select id="login-school">
+        <option value="">— select school —</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Your Name</label>
+      <input type="text" id="login-name" placeholder="Enter your name…" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Enter →</button>
+    <div class="login-err" id="login-err">Please complete all fields.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════════ -->
+<div id="app">
+  <header>
+    <div class="logo"><img id="app-logo" src="" alt="VericertAI"></div>
+    <div class="hdr-mid" id="hdr-mid">STUDENT PROJECT BOARD</div>
+    <div class="hdr-right">
+      <div class="user-pill"><span class="udot" id="udot"></span><span id="user-label"></span></div>
+      <button class="btn btn-o btn-sm" id="btn-action" style="display:none" onclick="actionBtn()"></button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Dynamic breadcrumb -->
+  <div class="breadcrumb" id="breadcrumb" style="display:none"></div>
+
+  <!-- ── SCREEN: SCHOOL ADMIN DASHBOARD ── -->
+  <div class="screen" id="scr-admin">
+    <div class="sec-hdr">
+      <div><div class="sec-title">🏫 School Administration</div><div class="sec-sub" id="admin-school-name"></div></div>
+    </div>
+    <div class="three" style="margin-bottom:20px;">
+      <div class="panel" style="cursor:pointer" onclick="showClasses()">
+        <div style="font-size:2rem;margin-bottom:8px;">📚</div>
+        <div style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">Classes</div>
+        <div style="font-size:.8rem;color:var(--muted);" id="admin-class-count">0 classes</div>
+      </div>
+      <div class="panel" style="cursor:pointer" onclick="showUsers()">
+        <div style="font-size:2rem;margin-bottom:8px;">👥</div>
+        <div style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">Users</div>
+        <div style="font-size:.8rem;color:var(--muted);" id="admin-user-count">0 users</div>
+      </div>
+      <div class="panel" style="cursor:pointer" onclick="showAllProjects()">
+        <div style="font-size:2rem;margin-bottom:8px;">📋</div>
+        <div style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">All Projects</div>
+        <div style="font-size:.8rem;color:var(--muted);" id="admin-proj-count">0 projects</div>
+      </div>
+    </div>
+    <!-- Recent projects -->
+    <div class="panel">
+      <div class="panel-t">Recent Projects</div>
+      <div id="admin-recent-projects"></div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: CLASSES ── -->
+  <div class="screen" id="scr-classes">
+    <div class="sec-hdr">
+      <div><div class="sec-title">📚 Classes</div></div>
+      <button class="btn btn-t btn-sm" onclick="openModal('modal-class')">＋ New Class</button>
+    </div>
+    <div class="card-grid" id="class-grid"></div>
+  </div>
+
+  <!-- ── SCREEN: CLASS DETAIL ── -->
+  <div class="screen" id="scr-class-detail">
+    <div class="sec-hdr">
+      <div><div class="sec-title" id="class-detail-name">Class</div><div class="sec-sub" id="class-detail-sub"></div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-o btn-sm" onclick="openAddUserModal('teacher')" id="btn-add-teacher" style="display:none">＋ Add Teacher</button>
+        <button class="btn btn-o btn-sm" onclick="openAddUserModal('student')" id="btn-add-student" style="display:none">＋ Add Student</button>
+        <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
+      </div>
+    </div>
+    <div class="two" style="margin-bottom:16px;">
+      <div class="panel">
+        <div class="panel-t">Teachers</div>
+        <div id="class-teachers-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-t">Students</div>
+        <div id="class-students-list"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-t">Projects</div>
+      <div class="card-grid" id="class-projects-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: USERS ── -->
+  <div class="screen" id="scr-users">
+    <div class="sec-hdr">
+      <div><div class="sec-title">👥 School Users</div></div>
+      <button class="btn btn-t btn-sm" onclick="openModal('modal-user')">＋ Add User</button>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Class(es)</th><th>Projects</th><th style="width:60px"></th></tr></thead>
+        <tbody id="users-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: ALL PROJECTS ── -->
+  <div class="screen" id="scr-all-projects">
+    <div class="sec-hdr">
+      <div><div class="sec-title">📋 All Projects</div></div>
+      <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
+    </div>
+    <div class="card-grid" id="all-projects-grid"></div>
+  </div>
+
+  <!-- ── SCREEN: TEACHER DASHBOARD ── -->
+  <div class="screen" id="scr-teacher">
+    <div class="sec-hdr">
+      <div><div class="sec-title">👩‍🏫 My Classes & Projects</div></div>
+    </div>
+    <div id="teacher-classes-section"></div>
+  </div>
+
+  <!-- ── SCREEN: PROJECT EDITOR ── -->
+  <div class="screen" id="scr-project">
+    <div id="project-editor-wrap">
+      <div class="tab-bar" id="wisp-tab-bar">
+        <div class="stage-tab active" id="stab-explore" onclick="showStage('explore')">
+          <span class="stnum">1</span>🔍 Explore Idea
+        </div>
+        <div class="stage-arrow">›</div>
+        <div class="stage-tab" id="stab-plan" onclick="showStage('plan')">
+          <span class="stnum">2</span>📋 Plan
+        </div>
+        <div class="stage-arrow">›</div>
+        <div class="stage-tab" id="stab-create" onclick="showStage('create')">
+          <span class="stnum">3</span>🔄 Create
+        </div>
+        <div class="stage-arrow">›</div>
+        <div class="stage-tab" id="stab-handover" onclick="showStage('handover')">
+          <span class="stnum">4</span>📦 Handover
+        </div>
+        <div class="stage-arrow">›</div>
+        <div class="stage-tab" id="stab-reports" onclick="showStage('reports')">
+          <span class="stnum">5</span>📊 Reports
+        </div>
+      </div>
+      <div style="padding:18px 24px;">
+
+        <!-- ═══ WISP FLOW STRIP ═══ -->
+        <div class="wisp-flow" id="wisp-flow-strip">
+          <div class="wisp-step ws-active" id="ws-explore" onclick="showStage('explore')"><span class="wisp-step-icon">🔍</span>Explore Idea</div>
+          <div class="wisp-step" id="ws-plan" onclick="showStage('plan')"><span class="wisp-step-icon">📋</span>Plan</div>
+          <div class="wisp-step" id="ws-create" onclick="showStage('create')"><span class="wisp-step-icon">🔄</span>Create</div>
+          <div class="wisp-step" id="ws-handover" onclick="showStage('handover')"><span class="wisp-step-icon">📦</span>Handover</div>
+          <div class="wisp-step" id="ws-reports" onclick="showStage('reports')"><span class="wisp-step-icon">📊</span>Reports</div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             STAGE 1: EXPLORE IDEA
+             (IdeaBoard + Who/Why/Objective)
+        ═══════════════════════════════════════ -->
+        <div class="stage-panel on" id="stage-explore">
+
+          <!-- Sub-tabs -->
+          <div class="sub-tab-bar">
+            <div class="sub-tab active" id="subtab-ideas" onclick="showSubTab('explore','ideas')">💡 Ideas Board <span class="tab-chip" id="ideas-tab-count" style="background:rgba(0,181,173,.2);color:var(--teal2);margin-left:4px;border-radius:8px;padding:1px 6px;font-size:.62rem;font-weight:700;">0</span></div>
+            <div class="sub-tab" id="subtab-brief" onclick="showSubTab('explore','brief')">📝 Project Brief</div>
+          </div>
+
+          <!-- Ideas sub-tab -->
+          <div class="sec on" id="sec-ideas">
+            <div class="ib-header">
+              <div class="ib-header-left">
+                <span style="font-family:Syne,sans-serif;font-weight:800;font-size:.95rem;">💡 IdeaBoard</span>
+                <div class="ib-live-pill"><div class="ib-live-dot"></div> Live · Collaborative</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-o btn-sm" onclick="openIdeaModal()">＋ Add Idea</button>
+                <button class="btn btn-t btn-sm" id="ib-ai-btn" onclick="runIdeaAI()">✨ AI Analyse</button>
+              </div>
+            </div>
+            <div class="ib-stats">
+              <div class="ib-stat" id="ibstat-total" onclick="toggleStatPanel('total')"><div class="ib-stat-v" id="ib-total">0</div><div class="ib-stat-l">Total Ideas</div></div>
+              <div class="ib-stat" id="ibstat-contributors" onclick="toggleStatPanel('contributors')"><div class="ib-stat-v" id="ib-contributors">0</div><div class="ib-stat-l">Contributors</div></div>
+              <div class="ib-stat" id="ibstat-zones" onclick="toggleStatPanel('zones')"><div class="ib-stat-v" id="ib-zones-active">0</div><div class="ib-stat-l">Active Zones</div></div>
+              <div class="ib-stat" id="ibstat-mine" onclick="toggleStatPanel('mine')"><div class="ib-stat-v" id="ib-my-ideas">0</div><div class="ib-stat-l">My Ideas</div></div>
+            </div>
+            <div id="ib-stat-panel-wrap"></div>
+            <div class="ib-zones" id="ib-zones"></div>
+            <div class="panel" style="margin-top:14px;">
+              <div class="panel-t">Participation</div>
+              <div id="ib-contrib"></div>
+            </div>
+            <div class="ib-ai-wrap" id="ib-ai-wrap">
+              <div class="panel"><div class="panel-t">✨ AI Analysis</div><div class="ib-ai-box" id="ib-ai-body">Running analysis…</div></div>
+            </div>
+          </div>
+
+          <!-- Project Brief sub-tab -->
+          <div class="sec" id="sec-brief">
+            <div class="two">
+              <div class="panel">
+                <div class="panel-t">① Who is the Client?</div>
+                <div class="fgg"><label>Client / Customer</label><input type="text" id="f-cust" placeholder="e.g. School Council"></div>
+                <div class="fgg"><label>Executive Sponsor</label><input type="text" id="f-exec" placeholder="e.g. Principal Johnson"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-t">② Why this Project?</div>
+                <div class="fgg"><label>Project Justification</label><textarea id="f-why" rows="4" placeholder="Why is this project being done? What problem does it solve?"></textarea></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-t">③ What does the Client want to achieve?</div>
+              <div class="fgg"><label>Objective</label><textarea id="f-obj" rows="3" placeholder="What does success look like? What must be achieved?"></textarea></div>
+            </div>
+          </div>
+
+          <!-- End-of-stage gate -->
+          <div class="stage-gate" id="gate-explore">
+            <div class="stage-gate-title">✅ End-of-Stage Check — Explore Idea</div>
+            <div class="stage-gate-sub">Before moving to Plan, confirm these are in place:</div>
+            <div class="gate-progress"><div class="gate-progress-bar" id="gate-explore-bar" style="width:0%"></div></div>
+            <div class="gate-checks">
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('explore')"> We have identified the client and their needs</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('explore')"> We have a clear project justification (Why)</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('explore')"> We have defined the objective</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('explore')"> The team has brainstormed ideas on the IdeaBoard</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('explore')"> We have identified initial risks and challenges</label>
+            </div>
+            <div class="gate-btn-row">
+              <button class="btn btn-t" onclick="showStage('plan')">Move to Plan →</button>
+              <span id="gate-explore-status" style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             STAGE 2: PLAN
+             (Project Setup + Schedule)
+        ═══════════════════════════════════════ -->
+        <div class="stage-panel" id="stage-plan">
+
+          <div class="sub-tab-bar">
+            <div class="sub-tab active" id="subtab-input" onclick="showSubTab('plan','input')">📋 Project Setup</div>
+            <div class="sub-tab" id="subtab-schedule" onclick="showSubTab('plan','schedule')">📅 Schedule</div>
+          </div>
+
+          <!-- Project Setup sub-tab -->
+          <div class="sec on" id="sec-input">
+            <div class="stats">
+              <div class="stat"><div class="stat-l">Project</div><div class="stat-v" id="st-name" style="font-size:.9rem">—</div></div>
+              <div class="stat"><div class="stat-l">Tasks To Do</div><div class="stat-v" id="st-tasks">0</div></div>
+              <div class="stat"><div class="stat-l">Risks</div><div class="stat-v" id="st-risks">0</div></div>
+              <div class="stat"><div class="stat-l">Budget Stages</div><div class="stat-v" id="st-budget">0</div></div>
+            </div>
+            <div class="two">
+              <div>
+                <div class="panel">
+                  <div class="panel-t">① Project Identity</div>
+                  <div class="fgg"><label>Project Name</label><input type="text" id="f-name" oninput="updateStats()" placeholder="e.g. School Garden Design"></div>
+                  <div class="fgg"><label>Project Manager</label><input type="text" id="f-pm"></div>
+                  <div class="fgg"><label>Project Support</label><input type="text" id="f-supp"></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-t">⑤ Project Team</div>
+                  <div class="two">
+                    <div>
+                      <div class="fgg"><label>Team Leader 1</label><input type="text" id="f-tl1"></div>
+                      <div class="fgg"><label>Add Member</label><div style="display:flex;gap:5px"><input type="text" id="tm1-in" placeholder="Name…"><button class="btn btn-t btn-sm" onclick="addMember(1)">Add</button></div></div>
+                      <div id="tm1-tags"></div>
+                    </div>
+                    <div>
+                      <div class="fgg"><label>Team Leader 2</label><input type="text" id="f-tl2"></div>
+                      <div class="fgg"><label>Add Member</label><div style="display:flex;gap:5px"><input type="text" id="tm2-in" placeholder="Name…"><button class="btn btn-t btn-sm" onclick="addMember(2)">Add</button></div></div>
+                      <div id="tm2-tags"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="panel">
+                  <div class="panel-t">⑥ Product Structure</div>
+                  <table><thead><tr><th>Customer Expectation</th><th>End Product</th><th>Specifications</th><th style="width:34px"></th></tr></thead>
+                  <tbody id="tb-prod"></tbody></table>
+                  <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addProd()">+ Add Row</button>
+                </div>
+                <div class="panel">
+                  <div class="panel-t">⑧ Budget by Phase</div>
+                  <table><thead><tr><th>Stage</th><th>Start ($)</th><th>End ($)</th><th>Done</th><th style="width:34px"></th></tr></thead>
+                  <tbody id="tb-bud"></tbody></table>
+                  <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addBud()">+ Add Stage</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule sub-tab -->
+          <div class="sec" id="sec-schedule">
+            <div class="panel">
+              <div class="panel-t">📅 Project Schedule — Explore → Plan → Create → Handover</div>
+              <div style="overflow-x:auto">
+                <table style="min-width:720px">
+                  <thead><tr><th style="min-width:110px">Stage / Work Package</th>
+                    <th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th><th>W6</th>
+                    <th>W7</th><th>W8</th><th>W9</th><th>W10</th><th>W11</th><th>W12</th>
+                    <th style="width:34px"></th>
+                  </tr></thead>
+                  <tbody id="tb-sched"></tbody>
+                </table>
+              </div>
+              <button class="btn btn-o btn-sm" style="margin-top:10px" onclick="addSched()">+ Add Stage</button>
+            </div>
+          </div>
+
+          <!-- End-of-stage gate -->
+          <div class="stage-gate" id="gate-plan">
+            <div class="stage-gate-title">✅ End-of-Stage Check — Plan</div>
+            <div class="stage-gate-sub">Before moving to Create, confirm the plan is solid:</div>
+            <div class="gate-progress"><div class="gate-progress-bar" id="gate-plan-bar" style="width:0%"></div></div>
+            <div class="gate-checks">
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Project team is fully set up (PM, Team Leaders, members)</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Product structure and specifications are defined</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Budget phases are documented</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Schedule with stages and weeks is complete</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Risks have been identified and recorded</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('plan')"> Client has reviewed and approved the plan</label>
+            </div>
+            <div class="gate-btn-row">
+              <button class="btn btn-t" onclick="showStage('create')">Move to Create →</button>
+              <span id="gate-plan-status" style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             STAGE 3: CREATE
+             (Kanban with MoSCoW + Risks)
+        ═══════════════════════════════════════ -->
+        <div class="stage-panel" id="stage-create">
+
+          <div class="sub-tab-bar">
+            <div class="sub-tab active" id="subtab-progress" onclick="showSubTab('create','progress')">🔄 Progress Board</div>
+            <div class="sub-tab" id="subtab-risks" onclick="showSubTab('create','risks')">⚠️ Risks &amp; Actions</div>
+          </div>
+
+          <!-- Progress sub-tab -->
+          <div class="sec on" id="sec-progress">
+            <div class="panel">
+              <div class="panel-t" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>Task Progress Board</span>
+                <div style="display:flex;gap:6px;align-items:center;font-size:.72rem;">
+                  <span style="font-weight:600;color:var(--muted)">New card priority:</span>
+                  <select id="moscow-select" style="border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:.72rem;font-family:'DM Sans',sans-serif;color:var(--navy);">
+                    <option value="must">🔴 Must Have</option>
+                    <option value="should">🟡 Should Have</option>
+                    <option value="could">🟢 Could Have</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:10px;font-size:.72rem;color:var(--muted);">
+                <span>MoSCoW: allocate 60% capacity to</span>
+                <span style="background:#FEE2E2;color:#991B1B;padding:1px 7px;border-radius:3px;font-weight:700;">Must Have</span>
+                <span>+ 20% to</span>
+                <span style="background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:3px;font-weight:700;">Should Have</span>
+                <span>+ 20% to</span>
+                <span style="background:#D1FAE5;color:#065F46;padding:1px 7px;border-radius:3px;font-weight:700;">Could Have</span>
+              </div>
+              <div class="kanban">
+                <div class="kcol"><div class="kh">To Do</div><div class="kcards" id="kc-todo"></div><div class="kadd"><input type="text" id="ki-todo" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('todo')"><button onclick="addCard('todo')">+</button></div></div>
+                <div class="kcol"><div class="kh">Create</div><div class="kcards" id="kc-create"></div><div class="kadd"><input type="text" id="ki-create" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('create')"><button onclick="addCard('create')">+</button></div></div>
+                <div class="kcol"><div class="kh g">Done</div><div class="kcards" id="kc-done1"></div><div class="kadd"><input type="text" id="ki-done1" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('done1')"><button onclick="addCard('done1')">+</button></div></div>
+                <div class="kcol"><div class="kh p">Check/Test</div><div class="kcards" id="kc-check"></div><div class="kadd"><input type="text" id="ki-check" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('check')"><button onclick="addCard('check')">+</button></div></div>
+                <div class="kcol"><div class="kh g">Done</div><div class="kcards" id="kc-done2"></div><div class="kadd"><input type="text" id="ki-done2" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('done2')"><button onclick="addCard('done2')">+</button></div></div>
+                <div class="kcol"><div class="kh t">Accepted</div><div class="kcards" id="kc-accepted"></div><div class="kadd"><input type="text" id="ki-accepted" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('accepted')"><button onclick="addCard('accepted')">+</button></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risks sub-tab -->
+          <div class="sec" id="sec-risks">
+            <div class="two">
+              <div class="panel">
+                <div class="panel-t">⑦ Risk Register</div>
+                <table><thead><tr><th>Risk</th><th>Chance</th><th>Impact</th><th style="width:34px"></th></tr></thead>
+                <tbody id="tb-risk"></tbody></table>
+                <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addRisk()">+ Add Risk</button>
+              </div>
+              <div>
+                <div class="panel">
+                  <div class="panel-t">⑨ Actions &amp; Problems</div>
+                  <table><thead><tr><th>Action</th><th>Who</th><th>✓</th><th style="width:34px"></th></tr></thead>
+                  <tbody id="tb-act"></tbody></table>
+                  <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addAct()">+ Add Action</button>
+                </div>
+                <div class="panel" style="margin-top:14px">
+                  <div class="panel-t">Change Requests</div>
+                  <table><thead><tr><th>What Changed</th><th>Who</th><th>✓</th><th style="width:34px"></th></tr></thead>
+                  <tbody id="tb-chg"></tbody></table>
+                  <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addChg()">+ Add Change</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- End-of-stage gate -->
+          <div class="stage-gate" id="gate-create">
+            <div class="stage-gate-title">✅ End-of-Stage Check — Create</div>
+            <div class="stage-gate-sub">Before moving to Handover, confirm delivery is ready:</div>
+            <div class="gate-progress"><div class="gate-progress-bar" id="gate-create-bar" style="width:0%"></div></div>
+            <div class="gate-checks">
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('create')"> All Must Have tasks are in the Accepted column</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('create')"> Product has been checked and tested against specifications</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('create')"> All open risks and actions are resolved or documented</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('create')"> Change requests have been reviewed and signed off</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('create')"> Client has reviewed and accepted the deliverables</label>
+            </div>
+            <div class="gate-btn-row">
+              <button class="btn btn-t" onclick="showStage('handover')">Move to Handover →</button>
+              <span id="gate-create-status" style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             STAGE 4: HANDOVER
+             (Whiteboard + Reports)
+        ═══════════════════════════════════════ -->
+        <div class="stage-panel" id="stage-handover">
+
+          <div class="sub-tab-bar">
+            <div class="sub-tab active" id="subtab-wb" onclick="showSubTab('handover','wb')">🖥️ Whiteboard</div>
+          </div>
+
+          <!-- Whiteboard sub-tab -->
+          <div class="sec on" id="sec-wb">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <span style="font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;">🖥 Live Whiteboard</span>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-o btn-sm" onclick="buildWB()">🔄 Refresh</button>
+                <button class="btn btn-t btn-sm" onclick="window.print()">🖨 Print / PDF</button>
+              </div>
+            </div>
+            <div id="wb-out"></div>
+          </div>
+
+          <!-- Handover gate -->
+          <div class="stage-gate" style="border-color:var(--navy);background:linear-gradient(135deg,#f0f4ff,#e8edf5);">
+            <div class="stage-gate-title" style="color:var(--navy);">📦 End-of-Stage Check — Handover</div>
+            <div class="stage-gate-sub">Before moving to Reports, confirm delivery is complete:</div>
+            <div class="gate-progress"><div class="gate-progress-bar" id="gate-handover-bar" style="width:0%;background:var(--navy)"></div></div>
+            <div class="gate-checks">
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('handover')"> Whiteboard has been printed / exported to PDF</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('handover')"> All deliverables have been handed over to the client</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('handover')"> Client has signed off on the final product</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('handover')"> Project team has completed a lessons learned discussion</label>
+            </div>
+            <div class="gate-btn-row">
+              <button class="btn btn-t" onclick="showStage('reports')">Move to Reports →</button>
+              <span id="gate-handover-status" style="font-size:.78rem;color:var(--muted)"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             STAGE 5: REPORTS
+             (All charts + IdeaBoard analytics)
+        ═══════════════════════════════════════ -->
+        <div class="stage-panel" id="stage-reports">
+
+          <div class="sub-tab-bar">
+            <div class="sub-tab active" id="subtab-proj-reports" onclick="showSubTab('reports','sec-reports')">📊 Project Reports</div>
+            <div class="sub-tab" id="subtab-idea-reports" onclick="showSubTab('reports','sec-idea-reports')">💡 IdeaBoard Analytics</div>
+            <div class="sub-tab" id="subtab-student-reports" onclick="showSubTab('reports','sec-student-reports')">🎓 Student Engagement</div>
+          </div>
+
+          <!-- Project Reports sub-tab -->
+          <div class="sec on" id="sec-reports">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;">📊 Project Reports</span>
+              <button class="btn btn-o btn-sm" onclick="buildReports()">🔄 Refresh Charts</button>
+            </div>
+
+            <!-- KPI strip -->
+            <div id="report-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+
+            <!-- Row 1: Budget -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">💰 Budget vs Actual</div><canvas id="chart-budget" height="220"></canvas></div>
+              <div class="panel"><div class="panel-t">🍩 Cost Distribution</div><canvas id="chart-costs" height="220"></canvas></div>
+            </div>
+
+            <!-- Row 2: Schedule + Tasks -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">📅 Schedule Progress</div><canvas id="chart-schedule" height="220"></canvas></div>
+              <div class="panel"><div class="panel-t">📋 Task Status (MoSCoW)</div><canvas id="chart-tasks" height="220"></canvas></div>
+            </div>
+
+            <!-- Row 3: Risk + Benefits -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">⚠️ Risk Matrix</div><canvas id="chart-risk" height="220"></canvas></div>
+              <div class="panel"><div class="panel-t">📈 Benefits Realisation</div><canvas id="chart-benefits" height="220"></canvas></div>
+            </div>
+          </div>
+
+          <!-- IdeaBoard Analytics sub-tab -->
+          <div class="sec" id="sec-idea-reports">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;">💡 IdeaBoard Analytics</span>
+              <button class="btn btn-o btn-sm" onclick="buildReports()">🔄 Refresh</button>
+            </div>
+
+            <!-- IdeaBoard KPI strip -->
+            <div id="report-ideas-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+
+            <!-- Idea charts row 1 -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">📊 Ideas by Zone</div><canvas id="chart-ideas-zone" height="220"></canvas></div>
+              <div class="panel"><div class="panel-t">👥 Contributor Activity</div><canvas id="chart-ideas-contrib" height="220"></canvas></div>
+            </div>
+
+            <!-- Idea charts row 2 -->
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">📅 Ideas Timeline</div><canvas id="chart-ideas-timeline" height="180"></canvas></div>
+              <div class="panel"><div class="panel-t">🍩 Zone Distribution</div><canvas id="chart-ideas-donut" height="180"></canvas></div>
+            </div>
+
+            <!-- Ideas log table -->
+            <div class="panel" id="report-ideas-list-panel" style="margin-bottom:14px;display:none;">
+              <div class="panel-t">📋 All Ideas Log</div>
+              <div id="report-ideas-list"></div>
+            </div>
+          </div>
+
+
+          <!-- Student Engagement sub-tab -->
+          <div class="sec" id="sec-student-reports">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;">🎓 Student Engagement Report</span>
+              <button class="btn btn-o btn-sm" onclick="buildReports()">🔄 Refresh</button>
+            </div>
+
+            <!-- Student KPI strip -->
+            <div id="report-student-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+
+            <!-- Charts row 1: Engagement score + Contribution breakdown -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">🎓 Overall Engagement Score per Student</div><canvas id="chart-student-engagement" height="240"></canvas></div>
+              <div class="panel"><div class="panel-t">💡 Idea Contributions per Student</div><canvas id="chart-student-ideas" height="240"></canvas></div>
+            </div>
+
+            <!-- Charts row 2: Actions owned + Role distribution -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div class="panel"><div class="panel-t">✅ Actions Owned per Student</div><canvas id="chart-student-actions" height="220"></canvas></div>
+              <div class="panel"><div class="panel-t">📊 Engagement by Category</div><canvas id="chart-student-radar" height="220"></canvas></div>
+            </div>
+
+            <!-- Per-student detail table -->
+            <div class="panel" id="student-detail-panel" style="margin-bottom:14px;">
+              <div class="panel-t" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>📋 Per-Student Engagement Summary</span>
+                <span style="font-size:.72rem;color:var(--muted);">Score = Ideas × 3 + Actions × 2 + Tasks × 1</span>
+              </div>
+              <div style="overflow-x:auto;">
+                <table id="student-detail-table" style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:.68rem;letter-spacing:.4px;">Student</th>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:center;font-size:.68rem;letter-spacing:.4px;">💡 Ideas</th>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:center;font-size:.68rem;letter-spacing:.4px;">✅ Actions</th>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:center;font-size:.68rem;letter-spacing:.4px;">📋 Tasks</th>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:center;font-size:.68rem;letter-spacing:.4px;">🏆 Score</th>
+                      <th style="background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:.68rem;letter-spacing:.4px;">Engagement</th>
+                    </tr>
+                  </thead>
+                  <tbody id="student-detail-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Participation timeline placeholder -->
+            <div class="panel" style="margin-bottom:14px;">
+              <div class="panel-t">📅 Idea Participation Over Time</div>
+              <canvas id="chart-student-timeline" height="160"></canvas>
+            </div>
+          </div>
+
+          <!-- Final closure gate -->
+          <div class="stage-gate" style="border-color:var(--green);background:linear-gradient(135deg,#f0fff4,#e6ffed);">
+            <div class="stage-gate-title" style="color:var(--green);">🎓 Project Complete — Final Closure</div>
+            <div class="stage-gate-sub">Complete these final steps to officially close the project:</div>
+            <div class="gate-progress"><div class="gate-progress-bar" id="gate-reports-bar" style="width:0%;background:var(--green)"></div></div>
+            <div class="gate-checks">
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('reports')"> All project reports have been reviewed with the team</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('reports')"> IdeaBoard analytics have been shared with stakeholders</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('reports')"> Budget variance has been explained and documented</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('reports')"> Lessons learned are recorded for future projects</label>
+              <label class="gate-check"><input type="checkbox" onchange="updateGate('reports')"> Project is officially closed ✅</label>
+            </div>
+            <div class="gate-btn-row" style="justify-content:center;">
+              <span id="gate-reports-status" style="font-size:.82rem;color:var(--green);font-weight:700;font-family:Syne,sans-serif;"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- New School -->
+<div class="overlay" id="modal-school">
+  <div class="modal">
+    <div class="modal-t">🏫 Add New School</div>
+    <div class="modal-sub">Create a school to get started.</div>
+    <div class="fg"><label>School Name</label><input type="text" id="m-school-name" placeholder="e.g. Riverside High School"></div>
+    <div class="fg"><label>Admin Name</label><input type="text" id="m-school-admin" placeholder="e.g. Principal Johnson"></div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="createSchool()">Create School</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Class -->
+<div class="overlay" id="modal-class">
+  <div class="modal">
+    <div class="modal-t">📚 New Class</div>
+    <div class="modal-sub">Add a class to your school.</div>
+    <div class="fg"><label>Class Name</label><input type="text" id="m-class-name" placeholder="e.g. Year 10 Business Studies"></div>
+    <div class="fg"><label>Year / Grade</label><input type="text" id="m-class-year" placeholder="e.g. Year 10"></div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="createClass()">Create Class</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User to Class -->
+<div class="overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-t" id="modal-add-user-title">Add Member</div>
+    <div class="modal-sub" id="modal-add-user-sub">Select an existing user or create a new one.</div>
+    <div class="fg"><label>Name</label><input type="text" id="m-user-name" placeholder="Full name…"></div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="addUserToClass()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- New User (school level) -->
+<div class="overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-t">👤 Add User</div>
+    <div class="modal-sub">Add a teacher or student to the school.</div>
+    <div class="fg"><label>Name</label><input type="text" id="m-uname" placeholder="Full name…"></div>
+    <div class="fg"><label>Role</label>
+      <select id="m-urole">
+        <option value="teacher">Teacher</option>
+        <option value="student">Student</option>
+      </select>
+    </div>
+    <div class="fg"><label>Class (optional)</label><select id="m-uclass"><option value="">— none —</option></select></div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="createUser()">Add User</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Project -->
+<div class="overlay" id="modal-project">
+  <div class="modal">
+    <div class="modal-t">📋 New Project</div>
+    <div class="modal-sub">Create a project board for a student group.</div>
+    <div class="fg"><label>Project Name</label><input type="text" id="m-pname" placeholder="e.g. School Garden Redesign"></div>
+    <div class="fg"><label>Client / Customer</label><input type="text" id="m-pclient" placeholder="e.g. School Council"></div>
+    <div class="fg"><label>Assign to Class</label><select id="m-pclass"><option value="">— school level —</option></select></div>
+    <div class="fg">
+      <label>Invite Students <span style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--muted)">(add names)</span></label>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="m-student-in" placeholder="Student name…" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;" onkeydown="if(event.key==='Enter')addInvite()">
+        <button class="btn btn-t btn-sm" onclick="addInvite()">Add</button>
+      </div>
+      <div id="invite-chips"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="createProject()">Create Project</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ADD IDEA MODAL -->
+<div class="overlay" id="modal-idea">
+  <div class="modal" style="width:420px">
+    <div class="modal-t">💡 Add Your Idea</div>
+    <div class="modal-sub">Post a sticky note to the IdeaBoard — visible to your whole team.</div>
+    <div class="fg">
+      <label>Your Idea</label>
+      <textarea id="idea-txt" rows="3" placeholder="Type your idea here…" style="resize:vertical"></textarea>
+    </div>
+    <div class="fg">
+      <label>Zone</label>
+      <select id="idea-zone">
+        <option value="0">🔍 Problem Definition</option>
+        <option value="1">💡 Proposed Solutions</option>
+        <option value="2">⚠️ Challenges &amp; Risks</option>
+        <option value="free">🌐 Free Brainstorm</option>
+      </select>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-o" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-t" onclick="submitIdea()">Post Idea</button>
+    </div>
+  </div>
+</div>
+<div class="ib-toast" id="ib-toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// LOGO
+// ═══════════════════════════════════════════════════════════
+var LOGO = 'data:image/png;base64,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';
+document.getElementById('login-logo').src = LOGO;
+document.getElementById('app-logo').src   = LOGO;
+
+// ═══════════════════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════════════════
+var db = { schools:[], classes:[], users:[], projects:[] };
+
+function genId(){ return '_' + Math.random().toString(36).substr(2,9); }
+
+function save(){ try{ localStorage.setItem('vc_db7', JSON.stringify(db)); }catch(e){} }
+function load(){
+  try{
+    // Clear stale data from previous versions
+    localStorage.removeItem('vc_db');
+    localStorage.removeItem('vc_db4');
+    localStorage.removeItem('vc_db5');
+    localStorage.removeItem('vc_db6');
+    var raw = localStorage.getItem('vc_db7');
+    if(raw) db = JSON.parse(raw);
+  }catch(e){ db = {schools:[],classes:[],users:[],projects:[]}; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════════════
+var sess = { role:'', name:'', schoolId:'', userId:'' };
+
+// ═══════════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════════
+var selectedRole = 'admin';
+
+function selRole(r){
+  selectedRole = r;
+  ['admin','teacher','student'].forEach(function(x){
+    document.getElementById('rb-'+x).classList.toggle('selected', x===r);
+  });
+  document.getElementById('login-name').placeholder =
+    r==='admin' ? 'e.g. Principal Johnson' :
+    r==='teacher' ? 'e.g. Ms. Thompson' : 'e.g. Jordan Kim';
+}
+
+function populateSchoolSelect(){
+  var sel = document.getElementById('login-school');
+  sel.innerHTML = '<option value="">— select school —</option>';
+  db.schools.forEach(function(s){
+    var o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name;
+    sel.appendChild(o);
+  });
+  // Also add "Create new school" option for admin
+  if(selectedRole === 'admin'){
+    var o2 = document.createElement('option');
+    o2.value = '__new__'; o2.textContent = '＋ Create new school…';
+    sel.appendChild(o2);
+  }
+}
+
+function doLogin(){
+  var name     = document.getElementById('login-name').value.trim();
+  var schoolId = document.getElementById('login-school').value;
+  var err      = document.getElementById('login-err');
+
+  if(!name){ err.style.display='block'; err.textContent='Please enter your name.'; return; }
+
+  // Handle new school creation for admin
+  if(selectedRole==='admin' && schoolId==='__new__'){
+    // Pre-fill admin name and open school creation modal
+    document.getElementById('m-school-admin').value = name;
+    err.style.display='none';
+    closeModals();
+    document.getElementById('modal-school').classList.add('open');
+    return;
+  }
+
+  if(!schoolId){ err.style.display='block'; err.textContent='Please select a school.'; return; }
+
+  var school = db.schools.find(function(s){ return s.id===schoolId; });
+  if(!school){ err.style.display='block'; err.textContent='School not found.'; return; }
+
+  // Validate student: must be in school's user list
+  if(selectedRole==='student'){
+    var found = db.users.find(function(u){
+      return u.schoolId===schoolId && u.role==='student' && u.name.toLowerCase()===name.toLowerCase();
+    });
+    if(!found){ err.style.display='block'; err.textContent='Student not found at this school. Contact your teacher.'; return; }
+  }
+
+  err.style.display='none';
+  sess.role     = selectedRole;
+  sess.name     = name;
+  sess.schoolId = schoolId;
+
+  // Find or create user record
+  var existing = db.users.find(function(u){
+    return u.schoolId===schoolId && u.name.toLowerCase()===name.toLowerCase() && u.role===selectedRole;
+  });
+  if(!existing && selectedRole==='admin'){
+    var newU = {id:genId(), name:name, role:'admin', schoolId:schoolId, classIds:[]};
+    db.users.push(newU); save();
+    sess.userId = newU.id;
+  } else if(existing){
+    sess.userId = existing.id;
+  }
+
+  startApp();
+}
+
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+
+  var icons = {admin:'🏫',teacher:'👩‍🏫',student:'🎓'};
+  document.getElementById('user-label').textContent = icons[sess.role]+' '+sess.name;
+  document.getElementById('udot').className = 'udot '+sess.role;
+
+  var school = db.schools.find(function(s){ return s.id===sess.schoolId; });
+  document.getElementById('hdr-mid').textContent = (school?school.name.toUpperCase():'') + ' — PROJECT BOARD';
+
+  if(sess.role==='admin'){
+    document.getElementById('btn-action').textContent='＋ New Class';
+    document.getElementById('btn-action').style.display='';
+    showAdminDashboard();
+  } else if(sess.role==='teacher'){
+    document.getElementById('btn-action').textContent='＋ New Project';
+    document.getElementById('btn-action').style.display='';
+    showTeacherDashboard();
+  } else {
+    document.getElementById('btn-action').style.display='none';
+    showStudentView();
+  }
+}
+
+function actionBtn(){
+  if(sess.role==='admin') openModal('modal-class');
+  else if(sess.role==='teacher') openNewProjectModal();
+}
+
+function doLogout(){
+  saveCurrentProject();
+  sess = {role:'',name:'',schoolId:'',userId:''};
+  currentProjectId = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-name').value='';
+  populateSchoolSelect();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ═══════════════════════════════════════════════════════════
+var navStack = []; // breadcrumb stack [{label, fn}]
+
+function showScreen(id, breadcrumbs){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+
+  // Update breadcrumb
+  var bc = document.getElementById('breadcrumb');
+  if(breadcrumbs && breadcrumbs.length){
+    bc.style.display='flex';
+    bc.innerHTML = breadcrumbs.map(function(b,i){
+      if(i===breadcrumbs.length-1){
+        return '<span class="bc-cur">'+b.label+'</span>';
+      }
+      return '<span class="bc-item" onclick="('+b.fn+')()">'+b.label+'</span><span class="bc-sep">›</span>';
+    }).join('');
+  } else {
+    bc.style.display='none';
+    bc.innerHTML='';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCHOOL CREATION
+// ═══════════════════════════════════════════════════════════
+function createSchool(){
+  var name  = document.getElementById('m-school-name').value.trim();
+  var admin = document.getElementById('m-school-admin').value.trim();
+  if(!name||!admin){ alert('Please fill all fields.'); return; }
+
+  var school = {id:genId(), name:name};
+  var user   = {id:genId(), name:admin, role:'admin', schoolId:school.id, classIds:[]};
+  db.schools.push(school);
+  db.users.push(user);
+  save();
+
+  // Now log them in
+  sess.role='admin'; sess.name=admin; sess.schoolId=school.id; sess.userId=user.id;
+  closeModals();
+
+  document.getElementById('login-school').value=school.id;
+  startApp();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function showAdminDashboard(){
+  saveCurrentProject();
+  currentProjectId=null;
+  var school = db.schools.find(function(s){ return s.id===sess.schoolId; });
+  document.getElementById('admin-school-name').textContent = school ? school.name : '';
+
+  var classes  = db.classes.filter(function(c){ return c.schoolId===sess.schoolId; });
+  var users    = db.users.filter(function(u){ return u.schoolId===sess.schoolId; });
+  var projects = db.projects.filter(function(p){ return p.schoolId===sess.schoolId; });
+
+  document.getElementById('admin-class-count').textContent = classes.length+' class'+(classes.length!==1?'es':'');
+  document.getElementById('admin-user-count').textContent  = users.length+' user'+(users.length!==1?'s':'');
+  document.getElementById('admin-proj-count').textContent  = projects.length+' project'+(projects.length!==1?'s':'');
+
+  // Recent projects
+  var recent = projects.slice(-5).reverse();
+  var el = document.getElementById('admin-recent-projects');
+  if(!recent.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No projects yet</div><div class="empty-desc">Create a class and add students to get started.</div></div>';
+  } else {
+    el.innerHTML='<table><thead><tr><th>Project</th><th>Class</th><th>Students</th><th>Ideas</th></tr></thead><tbody>'
+      + recent.map(function(p){
+        var cls = db.classes.find(function(c){ return c.id===p.classId; });
+        var ideaCount = (p.data&&p.data.ideaboard) ? p.data.ideaboard.length : 0;
+        return '<tr class="recent-proj-row" data-pid="'+p.id+'" style="cursor:pointer">'
+          +'<td>'+p.name+'</td>'
+          +'<td>'+(cls?cls.name:'School level')+'</td>'
+          +'<td>'+p.students.join(', ')+'</td>'
+          +'<td>'+ideaCount+'</td>'
+          +'</tr>';
+      }).join('')
+      + '</tbody></table>';
+  // Attach click handlers after DOM is set
+  el.querySelectorAll('.recent-proj-row').forEach(function(row){
+    row.addEventListener('click', function(){ openProject(this.getAttribute('data-pid')); });
+  });
+  }
+
+  showScreen('scr-admin');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLASSES
+// ═══════════════════════════════════════════════════════════
+function showClasses(){
+  var classes = db.classes.filter(function(c){ return c.schoolId===sess.schoolId; });
+  var grid = document.getElementById('class-grid');
+  grid.innerHTML='';
+
+  classes.forEach(function(cls){
+    var teachers = db.users.filter(function(u){ return u.classIds && u.classIds.indexOf(cls.id)!==-1 && u.role==='teacher'; });
+    var students = db.users.filter(function(u){ return u.classIds && u.classIds.indexOf(cls.id)!==-1 && u.role==='student'; });
+    var projects = db.projects.filter(function(p){ return p.classId===cls.id; });
+
+    var card = document.createElement('div'); card.className='card';
+    card.onclick=(function(id){ return function(){ showClassDetail(id); }; })(cls.id);
+    card.innerHTML='<div class="card-icon">📚</div>'
+      +'<div class="card-name">'+cls.name+'</div>'
+      +'<div class="card-sub">'+(cls.year||'')+'</div>'
+      +'<div class="card-meta">'
+      +'<span class="badge teal">👩‍🏫 '+teachers.length+' teacher'+(teachers.length!==1?'s':'')+'</span>'
+      +'<span class="badge purple">🎓 '+students.length+' student'+(students.length!==1?'s':'')+'</span>'
+      +'<span class="badge">📋 '+projects.length+' project'+(projects.length!==1?'s':'')+'</span>'
+      +'</div>';
+
+    if(sess.role==='admin'){
+      var acts = document.createElement('div'); acts.className='card-actions';
+      var del  = document.createElement('button'); del.className='icon-btn'; del.textContent='🗑';
+      del.onclick=(function(id){ return function(e){ e.stopPropagation(); deleteClass(id); }; })(cls.id);
+      acts.appendChild(del); card.appendChild(acts);
+    }
+    grid.appendChild(card);
+  });
+
+  var newCard = document.createElement('div'); newCard.className='new-card';
+  newCard.onclick=function(){ openModal('modal-class'); };
+  newCard.innerHTML='<span style="font-size:1.3rem">＋</span> New Class';
+  grid.appendChild(newCard);
+
+  showScreen('scr-classes',[
+    {label:'Dashboard', fn:'showAdminDashboard'},
+    {label:'Classes'}
+  ]);
+}
+
+function createClass(){
+  var name = document.getElementById('m-class-name').value.trim();
+  var year = document.getElementById('m-class-year').value.trim();
+  if(!name){ alert('Please enter a class name.'); return; }
+  var cls = {id:genId(), schoolId:sess.schoolId, name:name, year:year};
+  db.classes.push(cls); save(); closeModals(); showClasses();
+}
+
+function deleteClass(id){
+  if(!confirm('Delete this class? Projects will remain.')) return;
+  db.classes = db.classes.filter(function(c){ return c.id!==id; });
+  db.users.forEach(function(u){ if(u.classIds) u.classIds=u.classIds.filter(function(x){return x!==id;}); });
+  save(); showClasses();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLASS DETAIL
+// ═══════════════════════════════════════════════════════════
+var currentClassId = null;
+var addingUserRole = 'student';
+
+function showClassDetail(classId){
+  saveCurrentProject();
+  currentClassId = classId;
+  var cls = db.classes.find(function(c){ return c.id===classId; });
+  if(!cls) return;
+
+  document.getElementById('class-detail-name').textContent = cls.name;
+  document.getElementById('class-detail-sub').textContent  = cls.year||'';
+
+  var canEdit = sess.role==='admin' || sess.role==='teacher';
+  document.getElementById('btn-add-teacher').style.display = sess.role==='admin' ? '' : 'none';
+  document.getElementById('btn-add-student').style.display = canEdit ? '' : 'none';
+
+  // Teachers
+  var teachers = db.users.filter(function(u){ return u.classIds && u.classIds.indexOf(classId)!==-1 && u.role==='teacher'; });
+  var tEl = document.getElementById('class-teachers-list');
+  tEl.innerHTML = teachers.length ? teachers.map(function(t){
+    return '<div class="chip">👩‍🏫 '+t.name
+      +(sess.role==='admin'?'<button onclick="removeFromClass(\''+t.id+'\',\''+classId+'\')">✕</button>':'')
+      +'</div>';
+  }).join('') : '<div style="color:var(--muted);font-size:.82rem">No teachers assigned yet.</div>';
+
+  // Students
+  var students = db.users.filter(function(u){ return u.classIds && u.classIds.indexOf(classId)!==-1 && u.role==='student'; });
+  var sEl = document.getElementById('class-students-list');
+  sEl.innerHTML = students.length ? students.map(function(s){
+    return '<div class="chip">🎓 '+s.name
+      +(canEdit?'<button onclick="removeFromClass(\''+s.id+'\',\''+classId+'\')">✕</button>':'')
+      +'</div>';
+  }).join('') : '<div style="color:var(--muted);font-size:.82rem">No students enrolled yet.</div>';
+
+  // Projects
+  renderClassProjects(classId);
+
+  var bc = sess.role==='admin'
+    ? [{label:'Dashboard',fn:'showAdminDashboard'},{label:'Classes',fn:'showClasses'},{label:cls.name}]
+    : [{label:'My Classes',fn:'showTeacherDashboard'},{label:cls.name}];
+
+  showScreen('scr-class-detail', bc);
+}
+
+function renderClassProjects(classId){
+  var projects = db.projects.filter(function(p){ return p.classId===classId; });
+  var grid = document.getElementById('class-projects-grid');
+  grid.innerHTML='';
+  projects.forEach(function(p){ grid.appendChild(makeProjectCard(p)); });
+  var nc=document.createElement('div'); nc.className='new-card';
+  nc.onclick=openNewProjectModal; nc.innerHTML='<span>＋</span> New Project'; grid.appendChild(nc);
+}
+
+function openAddUserModal(role){
+  addingUserRole = role;
+  document.getElementById('modal-add-user-title').textContent = role==='teacher' ? '＋ Add Teacher' : '＋ Add Student';
+  document.getElementById('modal-add-user-sub').textContent   = 'Enter the '+role+'\'s name to add them to this class.';
+  document.getElementById('m-user-name').value='';
+  openModal('modal-add-user');
+}
+
+function addUserToClass(){
+  var name = document.getElementById('m-user-name').value.trim();
+  if(!name) return;
+  // Find or create user
+  var user = db.users.find(function(u){ return u.schoolId===sess.schoolId && u.name.toLowerCase()===name.toLowerCase() && u.role===addingUserRole; });
+  if(!user){
+    user={id:genId(),name:name,role:addingUserRole,schoolId:sess.schoolId,classIds:[]};
+    db.users.push(user);
+  }
+  if(!user.classIds) user.classIds=[];
+  if(user.classIds.indexOf(currentClassId)===-1) user.classIds.push(currentClassId);
+  save(); closeModals(); showClassDetail(currentClassId);
+}
+
+function removeFromClass(userId, classId){
+  var user = db.users.find(function(u){ return u.id===userId; });
+  if(user && user.classIds) user.classIds=user.classIds.filter(function(x){return x!==classId;});
+  save(); showClassDetail(classId);
+}
+
+// ═══════════════════════════════════════════════════════════
+// USERS SCREEN
+// ═══════════════════════════════════════════════════════════
+function showUsers(){
+  var users = db.users.filter(function(u){ return u.schoolId===sess.schoolId; });
+  var tbody = document.getElementById('users-table');
+  tbody.innerHTML = users.map(function(u){
+    var classes = (u.classIds||[]).map(function(cid){
+      var cls=db.classes.find(function(c){return c.id===cid;});
+      return cls?cls.name:'';
+    }).filter(Boolean).join(', ');
+    var projs = db.projects.filter(function(p){ return p.students.indexOf(u.name)!==-1; }).length;
+    return '<tr>'
+      +'<td>'+u.name+'</td>'
+      +'<td><span class="role-tag '+u.role+'">'+u.role+'</span></td>'
+      +'<td>'+(classes||'—')+'</td>'
+      +'<td>'+projs+'</td>'
+      +'<td><button class="del" onclick="deleteUser(\''+u.id+'\')">✕</button></td>'
+      +'</tr>';
+  }).join('');
+
+  // Populate class dropdown in modal
+  var sel = document.getElementById('m-uclass');
+  sel.innerHTML='<option value="">— none —</option>';
+  db.classes.filter(function(c){return c.schoolId===sess.schoolId;}).forEach(function(c){
+    var o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o);
+  });
+
+  showScreen('scr-users',[{label:'Dashboard',fn:'showAdminDashboard'},{label:'Users'}]);
+}
+
+function createUser(){
+  var name  = document.getElementById('m-uname').value.trim();
+  var role  = document.getElementById('m-urole').value;
+  var clsId = document.getElementById('m-uclass').value;
+  if(!name) return;
+  var user={id:genId(),name:name,role:role,schoolId:sess.schoolId,classIds:clsId?[clsId]:[]};
+  db.users.push(user); save(); closeModals(); showUsers();
+}
+
+function deleteUser(id){
+  if(!confirm('Remove this user?')) return;
+  db.users=db.users.filter(function(u){return u.id!==id;}); save(); showUsers();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALL PROJECTS SCREEN
+// ═══════════════════════════════════════════════════════════
+function showAllProjects(){
+  var projects = db.projects.filter(function(p){ return p.schoolId===sess.schoolId; });
+  var grid = document.getElementById('all-projects-grid');
+  grid.innerHTML='';
+  if(!projects.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📋</div><div class="empty-title">No projects yet</div><div class="empty-desc">Create a project from any class or at school level.</div></div>';
+  } else {
+    projects.forEach(function(p){ grid.appendChild(makeProjectCard(p)); });
+  }
+  var nc=document.createElement('div'); nc.className='new-card';
+  nc.onclick=openNewProjectModal; nc.innerHTML='<span>＋</span> New Project'; grid.appendChild(nc);
+
+  showScreen('scr-all-projects',[{label:'Dashboard',fn:'showAdminDashboard'},{label:'All Projects'}]);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TEACHER DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function showTeacherDashboard(){
+  saveCurrentProject(); currentProjectId=null;
+  var myClasses = db.classes.filter(function(c){
+    return c.schoolId===sess.schoolId && db.users.some(function(u){
+      return u.name.toLowerCase()===sess.name.toLowerCase() && u.role==='teacher' && u.classIds && u.classIds.indexOf(c.id)!==-1;
+    });
+  });
+
+  var wrap = document.getElementById('teacher-classes-section');
+  wrap.innerHTML='';
+
+  if(!myClasses.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">📚</div><div class="empty-title">No classes assigned</div><div class="empty-desc">Ask your school admin to assign you to a class.</div></div>';
+  } else {
+    myClasses.forEach(function(cls){
+      var projects = db.projects.filter(function(p){ return p.classId===cls.id; });
+      var div = document.createElement('div');
+      div.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+        +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:1rem">📚 '+cls.name+'</div>'
+        +'<button class="btn btn-o btn-sm" onclick="showClassDetail(\''+cls.id+'\')">View Class</button>'
+        +'</div>';
+      var grid = document.createElement('div'); grid.className='card-grid';
+      projects.forEach(function(p){ grid.appendChild(makeProjectCard(p)); });
+      var nc=document.createElement('div'); nc.className='new-card';
+      nc.onclick=(function(cid){ return function(){ currentClassId=cid; openNewProjectModal(); }; })(cls.id);
+      nc.innerHTML='<span>＋</span> New Project'; grid.appendChild(nc);
+      div.appendChild(grid);
+      wrap.appendChild(div);
+    });
+  }
+  showScreen('scr-teacher');
+}
+
+// ═══════════════════════════════════════════════════════════
+// STUDENT VIEW
+// ═══════════════════════════════════════════════════════════
+function showStudentView(){
+  var myProjects = db.projects.filter(function(p){
+    return p.schoolId===sess.schoolId && p.students.some(function(s){ return s.toLowerCase()===sess.name.toLowerCase(); });
+  });
+  if(myProjects.length===1){ openProject(myProjects[0].id); return; }
+  if(myProjects.length>1){
+    var grid=document.getElementById('all-projects-grid');
+    grid.innerHTML=''; myProjects.forEach(function(p){ grid.appendChild(makeProjectCard(p)); });
+    showScreen('scr-all-projects');
+    return;
+  }
+  // No projects
+  document.getElementById('all-projects-grid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎓</div><div class="empty-title">No projects found</div><div class="empty-desc">You have not been added to any project yet.<br>Ask your teacher to invite you.</div></div>';
+  showScreen('scr-all-projects');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT CARDS
+// ═══════════════════════════════════════════════════════════
+function makeProjectCard(p){
+  var card = document.createElement('div');
+  card.className = 'card';
+  card.setAttribute('data-pid', p.id);
+  var cls = p.classId ? db.classes.find(function(c){return c.id===p.classId;}) : null;
+  var ideaCount = (p.data&&p.data.ideaboard) ? p.data.ideaboard.length : 0;
+  var icon='\ud83d\udccb', studentIcon='\ud83c\udf93', ideaIcon='\ud83d\udca1', binIcon='\ud83d\uddd1';
+  card.innerHTML = '<div class="card-icon">'+icon+'</div>'
+    +'<div class="card-name">'+p.name+'</div>'
+    +'<div class="card-sub">'+(p.client||'No client')+(cls?' &middot; '+cls.name:'')+'</div>'
+    +'<div class="card-meta">'
+    +'<span class="badge teal">'+studentIcon+' '+p.students.length+' student'+(p.students.length!==1?'s':'')+'</span>'
+    +(ideaCount>0?'<span class="badge purple">'+ideaIcon+' '+ideaCount+' idea'+(ideaCount!==1?'s':'')+'</span>':'')
+    +'</div>';
+  if(sess.role==='admin'||sess.role==='teacher'){
+    var delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn';
+    delBtn.style.cssText = 'position:absolute;top:10px;right:10px;';
+    delBtn.textContent = binIcon;
+    delBtn.addEventListener('click', (function(pid){ return function(e){ e.stopPropagation(); deleteProject(pid); }; })(p.id));
+    card.appendChild(delBtn);
+  }
+  card.addEventListener('click', function(e){
+    if(e.target.classList.contains('icon-btn')) return;
+    openProject(card.getAttribute('data-pid'));
+  });
+  return card;
+}
+// ═══════════════════════════════════════════════════════════
+// NEW PROJECT MODAL
+// ═══════════════════════════════════════════════════════════
+var invitedStudents=[];
+
+function openNewProjectModal(){
+  invitedStudents=[];
+  document.getElementById('m-pname').value='';
+  document.getElementById('m-pclient').value='';
+  document.getElementById('m-student-in').value='';
+  document.getElementById('invite-chips').innerHTML='';
+
+  // Populate class dropdown
+  var sel=document.getElementById('m-pclass');
+  sel.innerHTML='<option value="">— school level —</option>';
+  db.classes.filter(function(c){return c.schoolId===sess.schoolId;}).forEach(function(c){
+    var o=document.createElement('option'); o.value=c.id; o.textContent=c.name;
+    if(c.id===currentClassId) o.selected=true;
+    sel.appendChild(o);
+  });
+
+  // Pre-fill students from current class
+  if(currentClassId){
+    db.users.filter(function(u){ return u.classIds && u.classIds.indexOf(currentClassId)!==-1 && u.role==='student'; }).forEach(function(u){
+      if(invitedStudents.indexOf(u.name)===-1) invitedStudents.push(u.name);
+    });
+    renderInviteChips();
+  }
+
+  openModal('modal-project');
+}
+
+function addInvite(){
+  var inp=document.getElementById('m-student-in');
+  var n=inp.value.trim(); if(!n) return;
+  if(invitedStudents.indexOf(n)===-1){ invitedStudents.push(n); renderInviteChips(); }
+  inp.value='';
+}
+function removeInvite(i){ invitedStudents.splice(i,1); renderInviteChips(); }
+function renderInviteChips(){
+  document.getElementById('invite-chips').innerHTML=invitedStudents.map(function(s,i){
+    return '<span class="chip">🎓 '+s+'<button onclick="removeInvite('+i+')">✕</button></span>';
+  }).join('');
+
+}
+
+
+function createProject(){
+  var name   = document.getElementById('m-pname').value.trim();
+  var client = document.getElementById('m-pclient').value.trim();
+  var classId= document.getElementById('m-pclass').value;
+  if(!name){ document.getElementById('m-pname').focus(); return; }
+
+  var p={
+    id:genId(), schoolId:sess.schoolId, classId:classId||null,
+    name:name, client:client, students:invitedStudents.slice(),
+    data:blankData()
+  };
+  db.projects.push(p); save(); closeModals(); openProject(p.id);
+}
+
+function deleteProject(id){
+  if(!confirm('Delete this project?')) return;
+  db.projects=db.projects.filter(function(p){return p.id!==id;});
+  save();
+  // Refresh current view
+  if(currentClassId) renderClassProjects(currentClassId);
+  else if(sess.role==='admin') showAdminDashboard();
+  else showTeacherDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT EDITOR
+// ═══════════════════════════════════════════════════════════
+var currentProjectId=null;
+var tm1=[],tm2=[],cardN=0;
+var tm1Colors=['#E53E3E','#ED8936','#ECC94B'];
+var tm2Colors=['#6B66FF','#805AD5','#319795'];
+
+function blankData(){
+  return {exec:'',pm:'',supp:'',tl1:'',tl2:'',why:'',obj:'',tm1:[],tm2:[],
+    prod:[],bud:[],risk:[],act:[],chg:[],sched:[],
+    kanban:{todo:[],create:[],done1:[],check:[],done2:[],accepted:[]},
+    ideaboard:[]};
+}
+
+function openProject(id){
+  saveCurrentProject();
+  var p=db.projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  // Validate data integrity - ensure all arrays exist
+  if(p.data){
+    if(!p.data.prod)     p.data.prod=[];
+    if(!p.data.bud)      p.data.bud=[];
+    if(!p.data.risk)     p.data.risk=[];
+    if(!p.data.act)      p.data.act=[];
+    if(!p.data.chg)      p.data.chg=[];
+    if(!p.data.sched)    p.data.sched=[];
+    if(!p.data.kanban)   p.data.kanban={todo:[],create:[],done1:[],check:[],done2:[],accepted:[]};
+    if(!p.data.ideaboard)p.data.ideaboard=[];
+    // Ensure kanban columns exist
+    ['todo','create','done1','check','done2','accepted'].forEach(function(c){
+      if(!p.data.kanban[c]) p.data.kanban[c]=[];
+    });
+  }
+  currentProjectId=id;
+
+  var cls = p.classId ? db.classes.find(function(c){return c.id===p.classId;}) : null;
+  var school = db.schools.find(function(s){return s.id===sess.schoolId;});
+
+  // Breadcrumb
+  var bc=[];
+  if(sess.role==='admin'){
+    bc.push({label:'Dashboard',fn:'showAdminDashboard'});
+    if(cls) bc.push({label:cls.name,fn:'function(){showClassDetail(\''+cls.id+'\')'});
+    bc.push({label:p.name});
+  } else if(sess.role==='teacher'){
+    bc.push({label:'My Classes',fn:'showTeacherDashboard'});
+    if(cls) bc.push({label:cls.name,fn:'function(){showClassDetail(\''+cls.id+'\')'});
+    bc.push({label:p.name});
+  } else {
+    bc.push({label:p.name});
+  }
+
+  var readOnly = sess.role==='student';
+  loadProjectData(p, readOnly);
+  showScreen('scr-project', bc);
+  showStage('explore');
+  buildWB();
+}
+
+function loadProjectData(p, readOnly){
+  ['tb-prod','tb-bud','tb-risk','tb-act','tb-chg','tb-sched'].forEach(function(id){ document.getElementById(id).innerHTML=''; });
+  ['todo','create','done1','check','done2','accepted'].forEach(function(col){ document.getElementById('kc-'+col).innerHTML=''; });
+  tm1=[]; tm2=[]; cardN=0;
+  document.getElementById('wb-out').innerHTML='';
+
+  var d=p.data||blankData();
+  var set=function(id,v){ var el=document.getElementById(id); if(el) el.value=v||''; };
+  set('f-name', p.name); set('f-cust', p.client);
+  set('f-exec',d.exec); set('f-pm',d.pm); set('f-supp',d.supp);
+  set('f-tl1',d.tl1);   set('f-tl2',d.tl2);
+  set('f-why',d.why);   set('f-obj',d.obj);
+
+  tm1=d.tm1?JSON.parse(JSON.stringify(d.tm1)):[];
+  tm2=d.tm2?JSON.parse(JSON.stringify(d.tm2)):[];
+  renderTeam(1); renderTeam(2);
+
+  function loadTbl(tbodyId,rows,addFn){
+    var count=rows&&rows.length?rows.length:1;
+    for(var i=0;i<count;i++) addFn();
+    if(!rows||!rows.length) return;
+    document.getElementById(tbodyId).querySelectorAll('tr').forEach(function(tr,i){
+      if(!rows[i]) return;
+      var ins=tr.querySelectorAll('input[type=text],input[type=number],select,textarea');
+      var cbs=tr.querySelectorAll('input[type=checkbox]');
+      var ri=0;
+      ins.forEach(function(el){ if(rows[i][ri]!==undefined) el.value=rows[i][ri]; ri++; });
+      cbs.forEach(function(el){ if(rows[i][ri]!==undefined) el.checked=rows[i][ri]; ri++; });
+    });
+  }
+  loadTbl('tb-prod',d.prod,addProd);
+  loadTbl('tb-bud', d.bud, addBud);
+  loadTbl('tb-risk',d.risk,addRisk);
+  loadTbl('tb-act', d.act, addAct);
+  loadTbl('tb-chg', d.chg, addChg);
+
+  if(d.sched&&d.sched.length){
+    d.sched.forEach(function(s){
+      addSched();
+      var rows=document.getElementById('tb-sched').querySelectorAll('tr');
+      var tr=rows[rows.length-1];
+      var ins=tr.querySelectorAll('input[type=text]');
+      ins[0].value=s.stage;
+      if(s.weeks) s.weeks.forEach(function(v,i){ if(ins[i+1]) ins[i+1].value=v; });
+    });
+  } else { addSched(); }
+
+  var kCols=['todo','create','done1','check','done2','accepted'];
+  kCols.forEach(function(col){
+    var items=d.kanban&&d.kanban[col]?d.kanban[col]:[];
+    items.forEach(function(t){ 
+      if(typeof t==='object'&&t.t) _addCard(col,t.t,t.m||'must');
+      else if(typeof t==='string') _addCard(col,t,'must');
+    });
+  });
+
+  // Read-only for students
+  document.querySelectorAll('#project-editor-wrap input:not(.kadd input), #project-editor-wrap textarea, #project-editor-wrap select').forEach(function(el){ el.disabled=readOnly; });
+  document.querySelectorAll('#project-editor-wrap .del, #project-editor-wrap .btn-o, .kadd button, .kadd input').forEach(function(el){ el.disabled=readOnly; if(readOnly) el.style.opacity='.5'; });
+
+  updateStats();
+}
+
+function saveCurrentProject(){
+  if(!currentProjectId) return;
+  var p=db.projects.find(function(x){return x.id===currentProjectId;});
+  if(!p) return;
+  // Only save if the project editor screen is actually active (DOM is populated)
+  var projScreen=document.getElementById('scr-project');
+  if(!projScreen||!projScreen.classList.contains('on')) return;
+  p.name  = document.getElementById('f-name').value.trim()||p.name;
+  p.client= document.getElementById('f-cust').value.trim();
+  p.data  = captureData();
+  save();
+}
+
+function captureData(){
+  function td(id){
+    var rows=[]; var tbody=document.getElementById(id); if(!tbody) return rows;
+    tbody.querySelectorAll('tr').forEach(function(tr){
+      var vals=[];
+      tr.querySelectorAll('input[type=text],input[type=number],select,textarea').forEach(function(el){vals.push(el.value);});
+      var cb=tr.querySelector('input[type=checkbox]'); if(cb) vals.push(cb.checked);
+      if(vals.some(function(v){return v!==''&&v!==false;})) rows.push(vals);
+    }); return rows;
+  }
+  function kd(col){ var el=document.getElementById('kc-'+col); if(!el) return [];
+    return Array.from(el.querySelectorAll('.kcard')).map(function(card){
+      var sp=card.querySelector('span:not(.moscow-badge):not(.del)');
+      var txt=sp?sp.textContent.trim():'';
+      var moscow=card.getAttribute('data-moscow')||'must';
+      return txt?{t:txt,m:moscow}:null;
+    }).filter(Boolean); }
+  var sr=[];
+  document.getElementById('tb-sched').querySelectorAll('tr').forEach(function(tr){
+    var ins=tr.querySelectorAll('input[type=text]'); if(!ins.length) return;
+    var stage=ins[0].value.trim(); var weeks=Array.from(ins).slice(1).map(function(i){return i.value.trim();});
+    if(stage) sr.push({stage:stage,weeks:weeks});
+  });
+  return{
+    exec:document.getElementById('f-exec').value, pm:document.getElementById('f-pm').value,
+    supp:document.getElementById('f-supp').value, tl1:document.getElementById('f-tl1').value,
+    tl2:document.getElementById('f-tl2').value,   why:document.getElementById('f-why').value,
+    obj:document.getElementById('f-obj').value,
+    tm1:JSON.parse(JSON.stringify(tm1)), tm2:JSON.parse(JSON.stringify(tm2)),
+    prod:td('tb-prod'),bud:td('tb-bud'),risk:td('tb-risk'),act:td('tb-act'),chg:td('tb-chg'),
+    sched:sr, kanban:{todo:kd('todo'),create:kd('create'),done1:kd('done1'),check:kd('check'),done2:kd('done2'),accepted:kd('accepted')},
+    ideaboard:(function(){ var p=db.projects.find(function(x){return x.id===currentProjectId;}); return(p&&p.data&&p.data.ideaboard)?p.data.ideaboard:[]; })()
+  };
+}
+
+// ── TABS ──────────────────────────────────────────────────
+// ── WISP Stage + Sub-tab Navigation ─────────────────────────────────────
+var stageMap = {
+  explore: { subs: ['ideas','brief'],                    default: 'ideas' },
+  plan:    { subs: ['input','schedule'],                  default: 'input' },
+  create:  { subs: ['progress','risks'],                  default: 'progress' },
+  handover:{ subs: ['wb'],                               default: 'wb' },
+  reports: { subs: ['sec-reports','sec-idea-reports','sec-student-reports'],   default: 'sec-reports' }
+};
+var currentStage = 'explore';
+var currentSubs  = { explore:'ideas', plan:'input', create:'progress', handover:'wb', reports:'sec-reports' };
+
+function showStage(stage){
+  currentStage = stage;
+  // Stage tabs
+  ['explore','plan','create','handover','reports'].forEach(function(s){
+    var el = document.getElementById('stab-'+s);
+    if(el){ el.classList.toggle('active', s===stage); el.classList.remove('done'); }
+    var ws = document.getElementById('ws-'+s);
+    if(ws){ ws.classList.toggle('ws-active', s===stage); ws.classList.remove('ws-done'); }
+  });
+  // Mark previous stages done
+  var order = ['explore','plan','create','handover','reports'];
+  var idx = order.indexOf(stage);
+  order.slice(0, idx).forEach(function(s){
+    var el = document.getElementById('stab-'+s); if(el) el.classList.add('done');
+    var ws = document.getElementById('ws-'+s); if(ws){ ws.classList.remove('ws-active'); ws.classList.add('ws-done'); }
+  });
+  // Stage panels
+  document.querySelectorAll('.stage-panel').forEach(function(el){ el.classList.remove('on'); });
+  var sp = document.getElementById('stage-'+stage); if(sp) sp.classList.add('on');
+  // Show active sub-tab for this stage
+  showSubTab(stage, currentSubs[stage]);
+}
+
+function showSubTab(stage, sub){
+  currentSubs[stage] = sub;
+  // Hide all secs within this stage
+  var sp = document.getElementById('stage-'+stage); if(!sp) return;
+  sp.querySelectorAll('.sec').forEach(function(el){ el.classList.remove('on'); });
+  sp.querySelectorAll('.sub-tab').forEach(function(el){ el.classList.remove('active'); });
+  // Show the chosen sec
+  var sec = sub.startsWith('sec-') ? document.getElementById(sub) : document.getElementById('sec-'+sub); if(sec) sec.classList.add('on');
+  var stbId = sub.startsWith('sec-') ? 'subtab-'+sub.replace('sec-','').replace('-','') : 'subtab-'+sub;
+  var stb = document.getElementById(stbId); 
+  // fallback: try proj-reports / idea-reports mappings
+  if(!stb){
+    var altMap = {'sec-reports':'subtab-proj-reports','sec-idea-reports':'subtab-idea-reports','sec-student-reports':'subtab-student-reports'};
+    if(altMap[sub]) stb = document.getElementById(altMap[sub]);
+  }
+  if(stb) stb.classList.add('active');
+  // Trigger renders
+  if(sub==='reports'||sub==='sec-reports'||sub==='sec-idea-reports'||sub==='sec-student-reports') setTimeout(buildReports, 80);
+  if(sub==='ideas')   renderIdeaBoard();
+  if(sub==='wb')      buildWB();
+}
+
+// Legacy shim so old code that calls showTab() still works
+function showTab(id){
+  var stageForSec = {
+    ideas:'explore', brief:'explore',
+    input:'plan', schedule:'plan',
+    progress:'create', risks:'create',
+    wb:'handover',
+    reports:'reports', 'idea-reports':'reports'
+  };
+  var stage = stageForSec[id] || 'explore';
+  showStage(stage);
+  showSubTab(stage, id);
+}
+
+function updateGate(stage){
+  var panel = document.getElementById('gate-'+stage); if(!panel) return;
+  var boxes = panel.querySelectorAll('input[type=checkbox]');
+  var checked = Array.from(boxes).filter(function(b){ return b.checked; }).length;
+  var total = boxes.length;
+  var pct = Math.round(checked/total*100);
+  var bar = document.getElementById('gate-'+stage+'-bar'); if(bar) bar.style.width = pct+'%';
+  var status = document.getElementById('gate-'+stage+'-status');
+  if(status){
+    if(pct===100) status.textContent = '✅ All checks complete — ready to proceed!';
+    else status.textContent = checked+' of '+total+' checks complete ('+pct+'%)';
+  }
+  // Style checked labels
+  panel.querySelectorAll('.gate-check').forEach(function(lbl){
+    var cb = lbl.querySelector('input[type=checkbox]');
+    lbl.classList.toggle('checked-item', cb&&cb.checked);
+  });
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats(){
+  document.getElementById('st-name').textContent  = document.getElementById('f-name').value.trim()||'—';
+  document.getElementById('st-tasks').textContent = document.getElementById('kc-todo').children.length;
+  document.getElementById('st-risks').textContent = document.getElementById('tb-risk').rows.length;
+  document.getElementById('st-budget').textContent= document.getElementById('tb-bud').rows.length;
+}
+
+// ── TEAM ──────────────────────────────────────────────────
+function addMember(g){
+  var inp=document.getElementById('tm'+g+'-in'); var name=inp.value.trim(); if(!name) return;
+  var arr=g===1?tm1:tm2; var cols=g===1?tm1Colors:tm2Colors;
+  arr.push({name:name,color:cols[arr.length%cols.length]}); inp.value=''; renderTeam(g);
+}
+function removeMember(g,i){ (g===1?tm1:tm2).splice(i,1); renderTeam(g); }
+function renderTeam(g){
+  document.getElementById('tm'+g+'-tags').innerHTML=(g===1?tm1:tm2).map(function(m,i){
+    return '<span class="ttag"><span class="tdot" style="background:'+m.color+'"></span>'+m.name+'<button onclick="removeMember('+g+','+i+')">✕</button></span>';
+  }).join('');
+}
+
+// ── TABLE HELPERS ─────────────────────────────────────────
+function addRow(id,html){ var tr=document.createElement('tr'); tr.innerHTML=html; document.getElementById(id).appendChild(tr); updateStats(); }
+function delRow(btn){ btn.closest('tr').remove(); updateStats(); }
+function addProd(){ addRow('tb-prod','<td><input type="text" placeholder="Expectation…"></td><td><input type="text" placeholder="End product…"></td><td><input type="text" placeholder="Specs…"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
+function addBud(){  addRow('tb-bud', '<td><input type="text" placeholder="Stage…"></td><td><input type="number" placeholder="0"></td><td><input type="number" placeholder="0"></td><td style="text-align:center"><input type="checkbox"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
+function addRisk(){ addRow('tb-risk','<td><input type="text" placeholder="Risk…"></td><td><select><option>Low</option><option>Medium</option><option>High</option></select></td><td><select><option>Low</option><option>Medium</option><option>High</option></select></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
+function addAct(){  addRow('tb-act', '<td><input type="text" placeholder="Action…"></td><td><input type="text" placeholder="Owner…"></td><td style="text-align:center"><input type="checkbox"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
+function addChg(){  addRow('tb-chg', '<td><input type="text" placeholder="Change…"></td><td><input type="text" placeholder="Who…"></td><td style="text-align:center"><input type="checkbox"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
+function addSched(name){
+  var tr=document.createElement('tr');
+  var c='<td><input type="text" value="'+(name||'')+'" placeholder="Stage…" style="font-weight:600"></td>';
+  for(var i=0;i<12;i++) c+='<td><input type="text" style="width:30px;text-align:center"></td>';
+  c+='<td><button class="del" onclick="delRow(this)">✕</button></td>';
+  tr.innerHTML=c; document.getElementById('tb-sched').appendChild(tr);
+}
+
+// ── KANBAN ────────────────────────────────────────────────
+function _addCard(col,txt){
+  if(!txt) return;
+  var id='c'+(++cardN);
+  var d=document.createElement('div'); d.className='kcard'; d.id=id; d.draggable=true;
+  d.ondragstart=function(e){e.dataTransfer.setData('text',id);};
+  var sp=document.createElement('span'); sp.style.flex='1'; sp.textContent=txt; d.appendChild(sp);
+  var btn=document.createElement('button'); btn.className='del'; btn.textContent='✕';
+  btn.onclick=(function(cid){return function(){var el=document.getElementById(cid);if(el)el.remove();updateStats();};})(id);
+  d.appendChild(btn); document.getElementById('kc-'+col).appendChild(d);
+}
+function addCard(col){ 
+  var inp=document.getElementById('ki-'+col); 
+  var sel=document.getElementById('moscow-select');
+  var moscow=sel?sel.value:'must';
+  _addCard(col,inp.value.trim(),moscow); 
+  inp.value=''; updateStats(); 
+}
+
+// ── WHITEBOARD ────────────────────────────────────────────
+function buildWB(){
+  var out=document.getElementById('wb-out');
+  var fv=function(id){ var el=document.getElementById(id); return el?el.value.trim():''; };
+  var pname=fv('f-name')||'Untitled'; var cust=fv('f-cust')||'—';
+  var exec=fv('f-exec')||'—'; var pm=fv('f-pm')||'—'; var supp=fv('f-supp')||'—';
+  var tl1=fv('f-tl1')||'—'; var tl2=fv('f-tl2')||'—';
+  var why=fv('f-why')||'—'; var obj=fv('f-obj')||'—';
+  var teamH=''; tm1.concat(tm2).forEach(function(m){ teamH+='<div style="display:flex;align-items:center;gap:3px;margin-bottom:2px"><span style="width:8px;height:8px;border-radius:50%;background:'+m.color+';display:inline-block;flex-shrink:0"></span><span style="font-size:.75rem">'+m.name+'</span></div>'; });
+  function rt(id){ var rows=[]; document.getElementById(id).querySelectorAll('tr').forEach(function(tr){ var v=[]; tr.querySelectorAll('input[type=text],input[type=number],select,textarea').forEach(function(el){v.push(el.value.trim());}); var cb=tr.querySelector('input[type=checkbox]'); if(cb) v.push(cb.checked?'✓':''); if(v.some(function(x){return x!=='';})) rows.push(v); }); return rows; }
+  function rc(col){ var el=document.getElementById('kc-'+col); if(!el) return []; return Array.from(el.querySelectorAll('.kcard span')).map(function(s){return s.textContent.trim();}); }
+  function rs(){ var r=[]; document.getElementById('tb-sched').querySelectorAll('tr').forEach(function(tr){ var ins=tr.querySelectorAll('input[type=text]'); if(!ins.length) return; var s=ins[0].value.trim(); var w=Array.from(ins).slice(1).map(function(i){return i.value.trim();}); if(s) r.push({stage:s,weeks:w}); }); return r; }
+  function rows(data,cols){ if(!data.length) return '<tr><td colspan="'+cols+'" style="color:#bbb;text-align:center;font-style:italic">—</td></tr>'; return data.map(function(r){ return '<tr>'+r.slice(0,cols).map(function(c){return '<td>'+(c||'')+'</td>';}).join('')+'</tr>'; }).join(''); }
+  function box(t,b){ return '<div class="wb-box"><div class="wb-bt">'+t+'</div>'+b+'</div>'; }
+  var prods=rt('tb-prod'),buds=rt('tb-bud'),risks=rt('tb-risk'),acts=rt('tb-act'),chgs=rt('tb-chg'),sched=rs();
+  var kCols=['todo','create','done1','check','done2','accepted'],kLabels=['To Do','Create','Done','Check/Test','Done','Accepted'],kBg=['#0B1F3A','#0B1F3A','#38A169','#6B66FF','#38A169','#007F7A'];
+  var h='';
+  h+='<div style="display:flex;align-items:center;gap:10px;border-bottom:3px solid #00B5AD;padding-bottom:10px;margin-bottom:14px">';
+  h+='<img src="'+LOGO+'" style="height:36px;width:auto"><div>';
+  h+='<div style="font-size:15px;font-weight:700;color:#0B1F3A">'+pname+'</div>';
+  h+='<div style="font-size:11px;color:#7A8FA6">Client: '+cust+'</div></div></div>';
+  h+='<div style="display:grid;grid-template-columns:160px 1fr 1.5fr;gap:8px;margin-bottom:8px">';
+  var tb='<div class="wb-val"><div style="margin-bottom:5px"><div><b>Executive:</b> '+exec+'</div><div><b>PM:</b> '+pm+'</div><div><b>Support:</b> '+supp+'</div></div><div style="border-top:1px solid #eee;padding-top:5px;margin-bottom:4px"><div><b>TL1:</b> '+tl1+'</div><div><b>TL2:</b> '+tl2+'</div></div>'+(teamH?'<div style="border-top:1px solid #eee;padding-top:5px">'+teamH+'</div>':'')+'</div>';
+  h+=box('Team',tb);
+  h+=box('Why','<div class="wb-val" style="margin-bottom:8px">'+why+'</div><div class="wb-bt">Objective</div><div class="wb-val">'+obj+'</div>');
+  h+=box('Product Structure','<table class="wb-tbl"><thead><tr><th>Expectation</th><th>End Product</th><th>Specs</th></tr></thead><tbody>'+rows(prods,3)+'</tbody></table>');
+  h+='</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1.2fr 1.1fr 1fr;gap:8px;margin-bottom:8px">';
+  h+=box('Budget','<table class="wb-tbl"><thead><tr><th>Stage</th><th style="width:60px">Start $</th><th style="width:60px">End $</th><th style="width:22px">✓</th></tr></thead><tbody>'+rows(buds,4)+'</tbody></table>');
+  h+=box('Risk Register','<table class="wb-tbl"><thead><tr><th>Risk</th><th style="width:50px">Chance</th><th style="width:50px">Impact</th></tr></thead><tbody>'+rows(risks,3)+'</tbody></table>');
+  h+=box('Actions','<table class="wb-tbl"><thead><tr><th>Action</th><th style="width:65px">Who</th><th style="width:22px">✓</th></tr></thead><tbody>'+rows(acts,3)+'</tbody></table>');
+  h+=box('Changes','<table class="wb-tbl"><thead><tr><th>What</th><th style="width:65px">Who</th><th style="width:22px">✓</th></tr></thead><tbody>'+rows(chgs,3)+'</tbody></table>');
+  h+='</div>';
+  var sh='<div style="overflow-x:auto"><table class="wb-tbl" style="min-width:480px"><thead><tr><th style="min-width:90px">Stage</th>';
+  for(var w=1;w<=12;w++) sh+='<th style="text-align:center;width:36px">W'+w+'</th>';
+  sh+='</tr></thead><tbody>';
+  if(sched.length){ sched.forEach(function(r){ sh+='<tr><td style="font-weight:600">'+r.stage+'</td>'; r.weeks.forEach(function(v){sh+='<td style="text-align:center">'+(v?'●':'')+'</td>';}); sh+='</tr>'; }); }
+  else sh+='<tr><td colspan="13" style="color:#bbb;text-align:center">—</td></tr>';
+  sh+='</tbody></table></div>';
+  h+='<div style="margin-bottom:8px">'+box('Schedule',sh)+'</div>';
+  var pg='<div style="display:grid;grid-template-columns:repeat(6,1fr);border:1px solid #D0DCE8;border-radius:5px;overflow:hidden">';
+  kCols.forEach(function(col,i){ var items=rc(col);
+    pg+='<div style="border-right:'+(i<5?'1px solid #D0DCE8':'none')+'">';
+    pg+='<div style="background:'+kBg[i]+';color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:5px 7px;text-align:center">'+kLabels[i]+'</div>';
+    pg+='<div style="padding:5px 7px;min-height:45px">';
+    if(items.length) items.forEach(function(t){pg+='<div class="wb-chip">'+t+'</div>';}); else pg+='<div style="color:#bbb;font-size:9px">—</div>';
+    pg+='</div></div>';
+  }); pg+='</div>';
+  h+=box('Progress',pg);
+  // Ideas snapshot on whiteboard
+  var wbIdeas=getIdeas();
+  if(wbIdeas.length){
+    var ih='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+    IB_ZONES.forEach(function(zone){
+      var zn=wbIdeas.filter(function(n){return n.zone===zone.id;});
+      ih+='<div style="border:1px solid #D0DCE8;border-radius:5px;overflow:hidden">'
+        +'<div style="background:'+zone.color+';color:#fff;font-size:9px;font-weight:700;padding:4px 7px">'+zone.label+'</div>'
+        +'<div style="padding:5px 7px;min-height:40px">';
+      if(zn.length) zn.forEach(function(n){ih+='<div class="wb-chip">'+n.text.substr(0,42)+(n.text.length>42?'…':'')+'</div>';});
+      else ih+='<div style="color:#bbb;font-size:9px">—</div>';
+      ih+='</div></div>';
+    });
+    ih+='</div>';
+    h+=box('💡 Ideas ('+wbIdeas.length+')',ih);
+    h+='<div style="margin-bottom:8px"></div>';
+  }
+
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:8px;border-top:2px solid #D0DCE8">';
+  h+='<img src="'+LOGO+'" style="height:24px;width:auto">';
+  h+='<div style="font-size:10px;color:#7A8FA6">'+pname+' | '+new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'})+'</div>';
+  h+='<div style="font-size:10px;color:#7A8FA6">www.vericertai.com.au</div></div>';
+  out.innerHTML=h;
+}
+
+// ── REPORTS ───────────────────────────────────────────────
+var chartInstances={};
+function destroyChart(id){ if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];} }
+
+// ── STUDENT ENGAGEMENT REPORT ─────────────────────────────────────────────
+function buildStudentReport(){
+  if(!currentProjectId) return;
+  var p = db.projects.find(function(x){ return x.id===currentProjectId; });
+  if(!p) return;
+
+  var C = { navy:'#0B1F3A', teal:'#00B5AD', gold:'#F0A500', purple:'#6B66FF',
+            green:'#38A169', red:'#E53E3E', muted:'#7A8FA6' };
+
+  // Gather all people: project students + teachers from class
+  var people = [];
+  (p.students||[]).forEach(function(n){ if(people.indexOf(n)===-1) people.push(n); });
+  if(p.classId){
+    db.users.filter(function(u){ return u.classIds&&u.classIds.indexOf(p.classId)!==-1&&u.role==='teacher'; })
+      .forEach(function(u){ if(people.indexOf(u.name)===-1) people.push(u.name); });
+  }
+  if(!people.length) people = ['No students enrolled'];
+
+  var ideas   = (p.data&&p.data.ideaboard)||[];
+
+  // Count ideas per person
+  var ideaCount = {};
+  people.forEach(function(n){ ideaCount[n]=0; });
+  ideas.forEach(function(note){
+    if(ideaCount[note.author]!==undefined) ideaCount[note.author]++;
+    else ideaCount[note.author]=(ideaCount[note.author]||0)+1;
+  });
+
+  // Count actions per person (from tb-act DOM)
+  var actionCount = {};
+  people.forEach(function(n){ actionCount[n]=0; });
+  var actTable = document.getElementById('tb-act');
+  if(actTable){
+    actTable.querySelectorAll('tr').forEach(function(tr){
+      var ins = tr.querySelectorAll('input[type=text]');
+      if(ins.length>=2){
+        var who = ins[1].value.trim();
+        if(who && actionCount[who]!==undefined) actionCount[who]++;
+      }
+    });
+  }
+
+  // Count kanban tasks per person — use card text matching student names
+  // (since cards don't have direct assignments, count by name in task text)
+  var taskCount = {};
+  people.forEach(function(n){ taskCount[n]=0; });
+  var kCols=['todo','create','done1','check','done2','accepted'];
+  kCols.forEach(function(col){
+    var el=document.getElementById('kc-'+col); if(!el) return;
+    el.querySelectorAll('.kcard').forEach(function(card){
+      var sp = card.querySelector('span:not(.moscow-badge)');
+      var txt = sp ? sp.textContent : '';
+      people.forEach(function(n){
+        var first = n.split(' ')[0];
+        if(txt.toLowerCase().indexOf(first.toLowerCase())!==-1) taskCount[n]++;
+      });
+    });
+  });
+
+  // Compute engagement score: ideas×3 + actions×2 + tasks×1
+  var scores = {};
+  var maxScore = 0;
+  people.forEach(function(n){
+    var s = (ideaCount[n]||0)*3 + (actionCount[n]||0)*2 + (taskCount[n]||0);
+    scores[n] = s;
+    if(s>maxScore) maxScore=s;
+  });
+  if(!maxScore) maxScore=1;
+
+  // Sort by score desc
+  var sorted = people.slice().sort(function(a,b){ return scores[b]-scores[a]; });
+
+  // KPI strip
+  var totalIdeas = ideas.length;
+  var activeStudents = sorted.filter(function(n){ return scores[n]>0; }).length;
+  var topStudent = sorted[0]||'—';
+  var avgScore = sorted.length ? Math.round(sorted.reduce(function(a,n){ return a+scores[n]; },0)/sorted.length) : 0;
+  var studentKpis = [
+    {label:'Project Students', value:String(people.length), sub:'enrolled in project',        color:'var(--teal)'},
+    {label:'Active Contributors', value:String(activeStudents), sub:'have engaged so far',   color:'var(--purple)'},
+    {label:'Top Engager',        value:topStudent.split(' ')[0], sub:topStudent.split(' ')[1]||'', color:'var(--gold)'},
+    {label:'Avg Engagement Score',value:String(avgScore),         sub:'across all students',  color:'var(--green)'}
+  ];
+  var kpiEl = document.getElementById('report-student-kpis');
+  if(kpiEl) kpiEl.innerHTML = studentKpis.map(function(k){
+    return '<div class="stat" style="border-left-color:'+k.color+'"><div class="stat-l">'+k.label+'</div>'
+      +'<div class="stat-v" style="font-size:1.3rem;color:'+k.color+'">'+k.value+'</div>'
+      +'<div class="stat-s">'+k.sub+'</div></div>';
+  }).join('');
+
+  var barColors  = [C.teal,C.purple,C.gold,C.green,C.red,'#319795','#805AD5','#ED8936'];
+
+  // Chart 1: Overall engagement score (horizontal bar)
+  destroyChart('student-engagement');
+  chartInstances['student-engagement'] = new Chart(document.getElementById('chart-student-engagement').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels: sorted,
+      datasets:[{
+        label:'Engagement Score',
+        data: sorted.map(function(n){ return scores[n]; }),
+        backgroundColor: sorted.map(function(_,i){ return barColors[i%barColors.length]+'CC'; }),
+        borderColor:     sorted.map(function(_,i){ return barColors[i%barColors.length]; }),
+        borderWidth:2, borderRadius:5
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true,
+      plugins:{ legend:{display:false},
+        tooltip:{callbacks:{label:function(ctx){ return 'Score: '+ctx.parsed.x; }}}
+      },
+      scales:{
+        x:{ticks:{color:C.muted,font:{size:10},stepSize:1},grid:{color:'#eee'},beginAtZero:true},
+        y:{ticks:{color:C.muted,font:{size:11}},grid:{display:false}}
+      }
+    }
+  });
+
+  // Chart 2: Ideas per student (vertical bar)
+  destroyChart('student-ideas');
+  chartInstances['student-ideas'] = new Chart(document.getElementById('chart-student-ideas').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels: sorted,
+      datasets:[{
+        label:'Ideas Posted',
+        data: sorted.map(function(n){ return ideaCount[n]||0; }),
+        backgroundColor: C.teal+'CC', borderColor:C.teal, borderWidth:2, borderRadius:5
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:C.muted,font:{size:10},stepSize:1},grid:{color:'#eee'},beginAtZero:true}
+      }
+    }
+  });
+
+  // Chart 3: Actions owned per student (horizontal bar)
+  destroyChart('student-actions');
+  chartInstances['student-actions'] = new Chart(document.getElementById('chart-student-actions').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels: sorted,
+      datasets:[{
+        label:'Actions Owned',
+        data: sorted.map(function(n){ return actionCount[n]||0; }),
+        backgroundColor: C.purple+'CC', borderColor:C.purple, borderWidth:2, borderRadius:5
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:C.muted,font:{size:10},stepSize:1},grid:{color:'#eee'},beginAtZero:true},
+        y:{ticks:{color:C.muted,font:{size:11}},grid:{display:false}}
+      }
+    }
+  });
+
+  // Chart 4: Radar — engagement by category (top 3 students or all if <=5)
+  destroyChart('student-radar');
+  var radarStudents = sorted.slice(0, Math.min(5, sorted.length));
+  var radarColors   = ['#00B5AD','#6B66FF','#F0A500','#38A169','#E53E3E'];
+  chartInstances['student-radar'] = new Chart(document.getElementById('chart-student-radar').getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:['Ideas (×3)','Actions (×2)','Task Mentions (×1)'],
+      datasets: radarStudents.map(function(n,i){
+        return {
+          label: n,
+          data: [(ideaCount[n]||0),(actionCount[n]||0),(taskCount[n]||0)],
+          backgroundColor: radarColors[i%radarColors.length]+'33',
+          borderColor:     radarColors[i%radarColors.length],
+          borderWidth:2, pointRadius:4,
+          pointBackgroundColor: radarColors[i%radarColors.length]
+        };
+      })
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'right',labels:{font:{size:10},color:C.navy,padding:8,boxWidth:10}}},
+      scales:{r:{ticks:{stepSize:1,font:{size:9},color:C.muted},grid:{color:'#ddd'},angleLines:{color:'#ddd'},pointLabels:{font:{size:10},color:C.navy}}}
+    }
+  });
+
+  // Chart 5: Idea participation over time — cumulative per student, sorted by date
+  destroyChart('student-timeline');
+  (function(){
+    var timelineEl=document.getElementById('chart-student-timeline');
+    if(!timelineEl) return;
+    if(!ideas.length){
+      var ctx2=timelineEl.getContext('2d');
+      ctx2.clearRect(0,0,timelineEl.width,timelineEl.height);
+      ctx2.fillStyle=C.muted; ctx2.font='13px Arial'; ctx2.textAlign='center';
+      ctx2.fillText('No ideas posted yet — contribute ideas in Stage 1 to see this chart.',ctx2.canvas.width/2,80);
+      return;
+    }
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var chronoIdeas=ideas.slice().sort(function(a,b){return a.ts-b.ts;});
+    var dayKeyMap={};
+    chronoIdeas.forEach(function(note){
+      var d=new Date(note.ts);
+      var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      if(!dayKeyMap[key]) dayKeyMap[key]=d.getDate()+' '+months[d.getMonth()];
+    });
+    var dayKeys=Object.keys(dayKeyMap).sort();
+    var dayLabels=dayKeys.map(function(k){return dayKeyMap[k];});
+    var byStudentDay={};
+    sorted.forEach(function(n){
+      byStudentDay[n]={};
+      dayKeys.forEach(function(k){byStudentDay[n][k]=0;});
+    });
+    chronoIdeas.forEach(function(note){
+      var d=new Date(note.ts);
+      var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      if(byStudentDay[note.author]&&byStudentDay[note.author][key]!==undefined) byStudentDay[note.author][key]++;
+    });
+    sorted.forEach(function(n){
+      var running=0;
+      dayKeys.forEach(function(k){running+=byStudentDay[n][k];byStudentDay[n][k]=running;});
+    });
+    var contributors=sorted.filter(function(n){return dayKeys.some(function(k){return byStudentDay[n][k]>0;});});
+    chartInstances['student-timeline']=new Chart(timelineEl.getContext('2d'),{
+      type:'line',
+      data:{
+        labels:dayLabels,
+        datasets:contributors.map(function(n,i){
+          return {
+            label:n,
+            data:dayKeys.map(function(k){return byStudentDay[n][k];}),
+            borderColor:barColors[i%barColors.length],
+            backgroundColor:barColors[i%barColors.length]+'18',
+            borderWidth:2.5,pointRadius:5,pointHoverRadius:7,
+            pointBackgroundColor:barColors[i%barColors.length],
+            fill:false,tension:0.35
+          };
+        })
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{position:'right',labels:{font:{size:10},color:C.navy,padding:8,boxWidth:10}},
+          tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y+' idea'+(ctx.parsed.y!==1?'s':'')+' total';}}}
+        },
+        scales:{
+          x:{ticks:{color:C.muted,font:{size:10}},grid:{color:'#f0f0f0'}},
+          y:{ticks:{color:C.muted,font:{size:10},stepSize:1,precision:0},grid:{color:'#eee'},beginAtZero:true,
+             title:{display:true,text:'Cumulative Ideas',color:C.muted,font:{size:9}}}
+        }
+      }
+    });
+  })();
+
+  // Per-student summary table
+  var tbody = document.getElementById('student-detail-tbody');
+  if(tbody){
+    tbody.innerHTML = sorted.map(function(n, i){
+      var ic=ideaCount[n]||0, ac=actionCount[n]||0, tc=taskCount[n]||0, sc=scores[n];
+      var pct = Math.round(sc/maxScore*100);
+      var barW = pct+'%';
+      var label = sc>=maxScore*0.75?'🌟 High':sc>=maxScore*0.4?'✅ Good':sc>0?'📝 Started':'⬜ Not started';
+      var rowBg = i%2===0?'#ffffff':'#f8fbfb';
+      return '<tr style="background:'+rowBg+'">'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;font-weight:600;font-size:.83rem;">'+n+'</td>'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;text-align:center;font-size:.83rem;">'+ic+'</td>'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;text-align:center;font-size:.83rem;">'+ac+'</td>'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;text-align:center;font-size:.83rem;">'+tc+'</td>'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;text-align:center;">'
+          +'<div style="display:flex;align-items:center;gap:6px;justify-content:center;">'
+          +'<div style="width:60px;height:6px;background:#e8edf5;border-radius:3px;overflow:hidden;">'
+          +'<div style="width:'+barW+';height:6px;background:var(--teal);border-radius:3px;"></div></div>'
+          +'<span style="font-weight:700;font-size:.82rem;color:var(--navy);">'+sc+'</span>'
+          +'</div></td>'
+        +'<td style="padding:8px 10px;border-bottom:1px solid #D0DCE8;font-size:.8rem;">'+label+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+}
+
+function buildReports(){
+  if(typeof Chart==='undefined') return;
+  var C={navy:'#0B1F3A',teal:'#00B5AD',teal2:'#007F7A',gold:'#F0A500',red:'#E53E3E',green:'#38A169',purple:'#6B66FF',muted:'#7A8FA6'};
+  var budRows=[]; document.getElementById('tb-bud').querySelectorAll('tr').forEach(function(tr){
+    var ins=tr.querySelectorAll('input'); if(!ins.length) return;
+    var stage=ins[0].value.trim(),start=parseFloat(ins[1].value)||0,end=parseFloat(ins[2].value)||0,done=tr.querySelector('input[type=checkbox]')&&tr.querySelector('input[type=checkbox]').checked;
+    if(stage) budRows.push({stage:stage,start:start,end:end,done:done,budget:end-start});
+  });
+  var kCols=['todo','create','done1','check','done2','accepted'];
+  var kLabels=['To Do','Create','Done','Check/Test','Done(2)','Accepted'];
+  var kCounts=kCols.map(function(col){var el=document.getElementById('kc-'+col);return el?el.querySelectorAll('.kcard').length:0;});
+  var schedStages=[],schedWeeks=[];
+  document.getElementById('tb-sched').querySelectorAll('tr').forEach(function(tr){
+    var ins=tr.querySelectorAll('input[type=text]'); if(!ins.length) return;
+    var s=ins[0].value.trim(); if(!s) return;
+    var a=Array.from(ins).slice(1).filter(function(i){return i.value.trim()!=='';}).length;
+    schedStages.push(s); schedWeeks.push(a);
+  });
+  var riskScores=[];
+  document.getElementById('tb-risk').querySelectorAll('tr').forEach(function(tr){
+    var ins=tr.querySelectorAll('input[type=text]'); var sels=tr.querySelectorAll('select');
+    if(!ins.length||!sels.length) return;
+    var desc=ins[0].value.trim(); if(!desc) return;
+    var cs={Low:1,Medium:2,High:3}[sels[0]?sels[0].value:'Low']||1;
+    var is={Low:1,Medium:2,High:3}[sels[1]?sels[1].value:'Low']||1;
+    riskScores.push({x:cs,y:is,r:13,label:desc.length>22?desc.substr(0,19)+'…':desc});
+  });
+  var scColors=[C.teal,C.gold,C.purple,C.green];
+  // Chart 1: Budget vs Actual
+  destroyChart('budget');
+  chartInstances['budget']=new Chart(document.getElementById('chart-budget').getContext('2d'),{type:'bar',data:{labels:budRows.map(function(r){return r.stage;}),datasets:[{label:'Budgeted $',data:budRows.map(function(r){return r.budget;}),backgroundColor:C.teal+'CC',borderColor:C.teal,borderWidth:2,borderRadius:4},{label:'Actual $',data:budRows.map(function(r,i){return r.done?r.budget:i===0?Math.round(r.budget*.6):0;}),backgroundColor:C.gold+'CC',borderColor:C.gold,borderWidth:2,borderRadius:4}]},options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:C.navy}}},scales:{x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},y:{ticks:{color:C.muted,font:{size:10},callback:function(v){return'$'+v.toLocaleString();}},grid:{color:'#eee'}}}}});
+  // Chart 2: Cost doughnut
+  destroyChart('costs');
+  chartInstances['costs']=new Chart(document.getElementById('chart-costs').getContext('2d'),{type:'doughnut',data:{labels:budRows.map(function(r){return r.stage;}),datasets:[{data:budRows.map(function(r){return r.budget;}),backgroundColor:[C.teal,C.gold,C.purple,C.green,C.red,'#319795'],borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'right',labels:{font:{size:10},color:C.navy,padding:10}},tooltip:{callbacks:{label:function(ctx){return ctx.label+': $'+ctx.parsed.toLocaleString();}}}}}});
+  // Chart 3: Schedule
+  destroyChart('schedule');
+  chartInstances['schedule']=new Chart(document.getElementById('chart-schedule').getContext('2d'),{type:'bar',data:{labels:schedStages,datasets:[{label:'Active Weeks',data:schedWeeks,backgroundColor:schedStages.map(function(_,i){return scColors[i%scColors.length]+'CC';}),borderColor:schedStages.map(function(_,i){return scColors[i%scColors.length];}),borderWidth:2,borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:C.muted,font:{size:10},stepSize:1},grid:{color:'#eee'}},y:{ticks:{color:C.muted,font:{size:11}},grid:{display:false}}}}});
+  // Chart 4: Tasks
+  destroyChart('tasks');
+  var tColors=[C.muted,C.teal,C.green,C.purple,C.green,'#007F7A'];
+  chartInstances['tasks']=new Chart(document.getElementById('chart-tasks').getContext('2d'),{type:'bar',data:{labels:kLabels,datasets:[{label:'Tasks',data:kCounts,backgroundColor:tColors.map(function(c){return c+'CC';}),borderColor:tColors,borderWidth:2,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},y:{ticks:{color:C.muted,font:{size:10},stepSize:1},grid:{color:'#eee'}}}}});
+  // Chart 5: Risk bubble
+  destroyChart('risk');
+  var rBg=riskScores.map(function(r){var s=r.x*r.y;return s>=6?C.red+'BB':s>=3?C.gold+'BB':C.green+'BB';});
+  chartInstances['risk']=new Chart(document.getElementById('chart-risk').getContext('2d'),{type:'bubble',data:{datasets:riskScores.length?riskScores.map(function(r,i){return{label:r.label,data:[{x:r.x,y:r.y,r:14}],backgroundColor:rBg[i],borderColor:rBg[i].slice(0,-2),borderWidth:1};}): [{label:'No risks',data:[{x:0,y:0,r:0}],backgroundColor:'transparent'}]},options:{responsive:true,plugins:{legend:{display:riskScores.length>0,position:'right',labels:{font:{size:9},color:C.navy,padding:5,boxWidth:10}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label;}}}},scales:{x:{min:.5,max:3.5,ticks:{stepSize:1,color:C.muted,font:{size:10},callback:function(v){return['','Low','Medium','High'][v]||'';}},title:{display:true,text:'Chance',color:C.muted,font:{size:10}},grid:{color:'#eee'}},y:{min:.5,max:3.5,ticks:{stepSize:1,color:C.muted,font:{size:10},callback:function(v){return['','Low','Medium','High'][v]||'';}},title:{display:true,text:'Impact',color:C.muted,font:{size:10}},grid:{color:'#eee'}}}}});
+  // Chart 6: Benefits
+  destroyChart('benefits');
+  var totalB=budRows.reduce(function(a,r){return a+r.budget;},0)||25000;
+  var doneC=budRows.filter(function(r){return r.done;}).length;
+  var prog=budRows.length?doneC/budRows.length:0;
+  var wks=[1,2,3,4,5,6,7,8,9,10,11,12];
+  var exp=wks.map(function(w){return Math.round((w/12)*totalB*1.4);});
+  var act=wks.map(function(w){return w<=2?0:Math.round(Math.min(1,((w-2)/10)*prog*1.1)*totalB);});
+  chartInstances['benefits']=new Chart(document.getElementById('chart-benefits').getContext('2d'),{type:'line',data:{labels:wks.map(function(w){return'W'+w;}),datasets:[{label:'Expected Benefits ($)',data:exp,borderColor:C.teal,backgroundColor:C.teal+'22',borderWidth:2.5,fill:true,tension:.4,pointRadius:3},{label:'Actual Realised ($)',data:act,borderColor:C.gold,backgroundColor:C.gold+'22',borderWidth:2.5,fill:true,tension:.4,pointRadius:3,borderDash:[5,4]}]},options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:C.navy}}},scales:{x:{ticks:{color:C.muted,font:{size:10}},grid:{display:false}},y:{ticks:{color:C.muted,font:{size:10},callback:function(v){return'$'+v.toLocaleString();}},grid:{color:'#eee'}}}}});
+  // KPIs
+  var tB=budRows.reduce(function(a,r){return a+r.budget;},0);
+  var tA=budRows.reduce(function(a,r,i){return a+(r.done?r.budget:i===0?Math.round(r.budget*.6):0);},0);
+  var vari=tB-tA;
+  var tT=kCounts.reduce(function(a,b){return a+b;},0);
+  var dT=kCounts[2]+kCounts[4]+kCounts[5];
+  var pct=tT>0?Math.round((dT/tT)*100):0;
+  var hr=riskScores.filter(function(r){return r.x*r.y>=6;}).length;
+  var kpis=[
+    {label:'Total Budget',value:'$'+tB.toLocaleString(),sub:budRows.length+' stage'+(budRows.length!==1?'s':''),color:'var(--teal)'},
+    {label:'Actual Spend',value:'$'+tA.toLocaleString(),sub:(vari>=0?'$'+vari.toLocaleString()+' under':'$'+Math.abs(vari).toLocaleString()+' over'),color:vari>=0?'var(--green)':'var(--red)'},
+    {label:'Tasks Complete',value:pct+'%',sub:dT+' of '+tT+' tasks',color:'var(--purple)'},
+    {label:'High Risks',value:String(hr),sub:hr===0?'No critical risks':hr+' need attention',color:hr===0?'var(--green)':'var(--red)'}
+  ];
+  document.getElementById('report-kpis').innerHTML=kpis.map(function(k){
+    return '<div class="stat" style="border-left-color:'+k.color+'"><div class="stat-l">'+k.label+'</div><div class="stat-v" style="font-size:1.4rem;color:'+k.color+'">'+k.value+'</div><div class="stat-s">'+k.sub+'</div></div>';
+  }).join('');
+
+  // ── IDEAS REPORTS ─────────────────────────────────────────────────────
+  var ideas = getIdeas();
+  var zoneColors = {'0':'#00B5AD','1':'#6B66FF','2':'#E53E3E','free':'#F0A500'};
+  var zoneLabels = {'0':'Problem Definition','1':'Proposed Solutions','2':'Challenges & Risks','free':'Free Brainstorm'};
+  var zoneIds = ['0','1','2','free'];
+
+  // Summary KPI strip
+  var people = getProjectPeople();
+  var contributorSet = {};
+  ideas.forEach(function(n){ contributorSet[n.author] = (contributorSet[n.author]||0)+1; });
+  var numContribs = Object.keys(contributorSet).length;
+  var zoneSet = {};
+  ideas.forEach(function(n){ zoneSet[n.zone] = 1; });
+  var numActiveZones = Object.keys(zoneSet).length;
+  var myCount = ideas.filter(function(n){ return n.author === sess.name; }).length;
+  var topContrib = Object.entries(contributorSet).sort(function(a,b){return b[1]-a[1];})[0];
+
+  var ideaSummaryKpis = [
+    {label:'Total Ideas',    value:String(ideas.length),             sub:numContribs+' contributor'+(numContribs!==1?'s':''),    color:'var(--teal)'},
+    {label:'Active Zones',   value:String(numActiveZones)+' / 4',    sub:'of 4 zones used',                                      color:'var(--purple)'},
+    {label:'My Contribution',value:String(myCount),                  sub:'idea'+(myCount!==1?'s':'')+' posted',                  color:'var(--gold)'},
+    {label:'Top Contributor',value:topContrib?topContrib[0].split(' ')[0]:'—', sub:topContrib?topContrib[1]+' idea'+(topContrib[1]!==1?'s':''):'', color:'var(--green)'}
+  ];
+  document.getElementById('report-ideas-summary').innerHTML = ideaSummaryKpis.map(function(k){
+    return '<div class="stat" style="border-left-color:'+k.color+'"><div class="stat-l">'+k.label+'</div>'
+      +'<div class="stat-v" style="font-size:1.3rem;color:'+k.color+'">'+k.value+'</div>'
+      +'<div class="stat-s">'+k.sub+'</div></div>';
+  }).join('');
+
+  // Chart: Ideas by Zone (vertical bar)
+  destroyChart('ideas-zone');
+  var zoneCounts = zoneIds.map(function(id){ return ideas.filter(function(n){return n.zone===id;}).length; });
+  chartInstances['ideas-zone'] = new Chart(document.getElementById('chart-ideas-zone').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: zoneIds.map(function(id){ return zoneLabels[id]; }),
+      datasets: [{
+        label: 'Ideas',
+        data: zoneCounts,
+        backgroundColor: zoneIds.map(function(id){ return zoneColors[id]+'CC'; }),
+        borderColor:      zoneIds.map(function(id){ return zoneColors[id]; }),
+        borderWidth: 2, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.parsed.y+' idea'+(ctx.parsed.y!==1?'s':''); }}}
+      },
+      scales: {
+        x: { ticks: { color: C.muted, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: C.muted, font: { size: 10 }, stepSize: 1 }, grid: { color: '#eee' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Chart: Contributor Activity (horizontal bar)
+  destroyChart('ideas-contrib');
+  var sortedContribs = Object.entries(contributorSet).sort(function(a,b){ return b[1]-a[1]; });
+  var contribNoteColors = ['#00B5AD','#6B66FF','#E53E3E','#F0A500','#38A169','#805AD5','#319795'];
+  chartInstances['ideas-contrib'] = new Chart(document.getElementById('chart-ideas-contrib').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: sortedContribs.map(function(p){ return p[0]; }),
+      datasets: [{
+        label: 'Ideas Posted',
+        data: sortedContribs.map(function(p){ return p[1]; }),
+        backgroundColor: sortedContribs.map(function(_,i){ return contribNoteColors[i % contribNoteColors.length]+'CC'; }),
+        borderColor:      sortedContribs.map(function(_,i){ return contribNoteColors[i % contribNoteColors.length]; }),
+        borderWidth: 2, borderRadius: 5
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.parsed.x+' idea'+(ctx.parsed.x!==1?'s':''); }}}
+      },
+      scales: {
+        x: { ticks: { color: C.muted, font:{size:10}, stepSize:1 }, grid:{color:'#eee'}, beginAtZero:true },
+        y: { ticks: { color: C.muted, font:{size:10} }, grid:{display:false} }
+      }
+    }
+  });
+
+  // Chart: Ideas Timeline (line — group by day)
+  destroyChart('ideas-timeline');
+  var tlMap = {};
+  ideas.forEach(function(n){
+    var d = new Date(n.ts);
+    var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    tlMap[key] = (tlMap[key]||0)+1;
+  });
+  var tlKeys = Object.keys(tlMap).sort();
+  // Build cumulative
+  var cumulative = [], running = 0;
+  tlKeys.forEach(function(k){ running += tlMap[k]; cumulative.push(running); });
+  var tlLabels = tlKeys.map(function(k){
+    var parts = k.split('-');
+    return parts[2]+'/'+parts[1];
+  });
+  // If all same day (demo data), spread across fake days for visual
+  if(tlKeys.length === 1 && ideas.length > 1){
+    tlLabels = []; cumulative = []; var step = 0;
+    ideas.forEach(function(n,i){
+      var fakeDay = 'Day '+(i+1);
+      tlLabels.push(fakeDay); step++; cumulative.push(step);
+    });
+  }
+  chartInstances['ideas-timeline'] = new Chart(document.getElementById('chart-ideas-timeline').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: tlLabels.length ? tlLabels : ['No data'],
+      datasets: [
+        { label: 'Cumulative Ideas', data: cumulative, borderColor: C.teal, backgroundColor: C.teal+'22',
+          borderWidth: 2.5, fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: C.teal },
+        { label: 'New per Day', data: tlKeys.map(function(k){return tlMap[k];}),
+          borderColor: C.purple, backgroundColor: 'transparent',
+          borderWidth: 1.5, fill: false, tension: 0.3, pointRadius: 3,
+          borderDash: [4,3], pointBackgroundColor: C.purple }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position:'top', labels:{ font:{size:10}, color:C.navy } } },
+      scales: {
+        x: { ticks:{color:C.muted,font:{size:9}}, grid:{display:false} },
+        y: { ticks:{color:C.muted,font:{size:10},stepSize:1}, grid:{color:'#eee'}, beginAtZero:true }
+      }
+    }
+  });
+
+  // Chart: Zone Distribution (doughnut)
+  destroyChart('ideas-donut');
+  var nonZeroZones = zoneIds.filter(function(id){ return ideas.filter(function(n){return n.zone===id;}).length > 0; });
+  chartInstances['ideas-donut'] = new Chart(document.getElementById('chart-ideas-donut').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: nonZeroZones.length ? nonZeroZones.map(function(id){return zoneLabels[id];}) : ['No ideas yet'],
+      datasets: [{
+        data: nonZeroZones.length ? nonZeroZones.map(function(id){ return ideas.filter(function(n){return n.zone===id;}).length; }) : [1],
+        backgroundColor: nonZeroZones.length ? nonZeroZones.map(function(id){return zoneColors[id]+'CC';}) : ['#eee'],
+        borderColor:     nonZeroZones.length ? nonZeroZones.map(function(id){return zoneColors[id];}) : ['#ccc'],
+        borderWidth: 2, hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, cutout: '58%',
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{size:9}, color:C.navy, padding:8, boxWidth:10 } },
+        tooltip: { callbacks: { label: function(ctx){
+          var total = ctx.dataset.data.reduce(function(a,b){return a+b;},0);
+          var pct = total ? Math.round(ctx.parsed/total*100) : 0;
+          return ctx.label+': '+ctx.parsed+' ('+pct+'%)';
+        }}}
+      }
+    }
+  });
+
+  // Ideas log table (visible when ideas exist)
+  var listPanel = document.getElementById('report-ideas-list-panel');
+  var listEl = document.getElementById('report-ideas-list');
+  if(ideas.length && listPanel && listEl) {
+    listPanel.style.display = '';
+    var sorted = ideas.slice().sort(function(a,b){ return b.ts - a.ts; });
+    listEl.innerHTML = '<table><thead><tr>'
+      +'<th>Idea</th><th style="width:130px">Zone</th><th style="width:110px">Author</th><th style="width:90px">Posted</th>'
+      +'</tr></thead><tbody>'
+      + sorted.map(function(n){
+          var zone = IB_ZONES.find(function(z){return z.id===n.zone;}) || {label:'—',color:'#ccc'};
+          var d = new Date(n.ts);
+          var dateStr = d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+          return '<tr>'
+            +'<td>'+n.text+'</td>'
+            +'<td><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+zone.color+';display:inline-block;flex-shrink:0"></span>'+zone.label+'</span></td>'
+            +'<td>'+n.author+'</td>'
+            +'<td style="color:var(--muted);font-size:.75rem">'+dateStr+'</td>'
+            +'</tr>';
+        }).join('')
+      +'</tbody></table>';
+  } else if(listPanel) {
+    listPanel.style.display = 'none';
+  }
+
+  // Build student engagement report
+  buildStudentReport();
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// ══ IDEAS TAB / IDEABOARD ══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+var IB_ZONES = [
+  { id:'0',    label:'🔍 Problem Definition', color:'#00B5AD', prompt:'What core problem is this project solving? Who is affected and how?' },
+  { id:'1',    label:'💡 Proposed Solutions', color:'#6B66FF', prompt:'What ideas do you have to address the problem? Think big — no idea is too small.' },
+  { id:'2',    label:'⚠️ Challenges & Risks', color:'#E53E3E', prompt:'What obstacles might prevent success? Consider budget, time, people and resources.' },
+  { id:'free', label:'🌐 Free Brainstorm',    color:'#F0A500', prompt:'Anything goes! Wild ideas, random thoughts, connections — put them all here.' }
+];
+var NOTE_COLORS = ['note-y','note-b','note-g','note-p'];
+
+function getProjectPeople(){
+  if(!currentProjectId) return [];
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return [];
+  var people=[];
+  p.students.forEach(function(name){if(people.indexOf(name)===-1) people.push(name);});
+  if(p.classId){
+    db.users.filter(function(u){return u.classIds&&u.classIds.indexOf(p.classId)!==-1&&u.role==='teacher';}).forEach(function(u){if(people.indexOf(u.name)===-1) people.push(u.name);});
+  }
+  db.users.filter(function(u){return u.schoolId===sess.schoolId&&u.role==='admin';}).forEach(function(u){if(people.indexOf(u.name)===-1) people.push(u.name);});
+  return people;
+}
+
+function getIdeas(){
+  if(!currentProjectId) return [];
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return [];
+  if(!p.data) p.data=blankData();
+  if(!p.data.ideaboard) p.data.ideaboard=[];
+  return p.data.ideaboard;
+}
+
+function saveIdea(note){
+  if(!currentProjectId) return;
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return;
+  if(!p.data) p.data=blankData();
+  if(!p.data.ideaboard) p.data.ideaboard=[];
+  p.data.ideaboard.push(note);
+  save();
+}
+
+function deleteIdea(idx){
+  if(!currentProjectId) return;
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return;
+  if(p.data&&p.data.ideaboard) p.data.ideaboard.splice(idx,1);
+  save(); renderIdeaBoard();
+}
+
+function getNoteColor(name){
+  var people=getProjectPeople();
+  var idx=people.indexOf(name);
+  return NOTE_COLORS[idx>=0?idx%NOTE_COLORS.length:0];
+}
+
+function renderIdeaBoard(){
+  if(!currentProjectId) return;
+  // Reset drill-down panel on re-render
+  if(typeof _activeStatPanel !== 'undefined') { _activeStatPanel = null; var pw=document.getElementById('ib-stat-panel-wrap'); if(pw) pw.innerHTML=''; }
+  var ideas=getIdeas();
+  var chipEl=document.getElementById('ideas-tab-count');
+  if(chipEl) chipEl.textContent=ideas.length;
+  var myIdeas=ideas.filter(function(n){return n.author===sess.name;}).length;
+  var contributorSet={};
+  ideas.forEach(function(n){contributorSet[n.author]=1;});
+  var contributors=Object.keys(contributorSet).length;
+  var zoneSet={};
+  ideas.forEach(function(n){zoneSet[n.zone]=1;});
+  var activeZones=Object.keys(zoneSet).length;
+  var totEl=document.getElementById('ib-total'); if(totEl) totEl.textContent=ideas.length;
+  var ctrEl=document.getElementById('ib-contributors'); if(ctrEl) ctrEl.textContent=contributors;
+  var azEl=document.getElementById('ib-zones-active'); if(azEl) azEl.textContent=activeZones;
+  var myEl=document.getElementById('ib-my-ideas'); if(myEl) myEl.textContent=myIdeas;
+  var zonesEl=document.getElementById('ib-zones'); if(!zonesEl) return;
+  zonesEl.innerHTML='';
+  IB_ZONES.forEach(function(zone){
+    var zoneNotes=ideas.filter(function(n){return n.zone===zone.id;});
+    var zoneEl=document.createElement('div'); zoneEl.className='ib-zone';
+    var notesHtml='<div class="ib-notes" id="ib-zone-notes-'+zone.id+'">';
+    zoneNotes.forEach(function(note){
+      var globalIdx=ideas.indexOf(note);
+      var cls=getNoteColor(note.author);
+      var canDel=sess.role==='admin'||sess.role==='teacher'||note.author===sess.name;
+      notesHtml+='<div class="ib-note '+cls+'">'
+        +escHtml(note.text)
+        +'<div class="ib-note-au">'+escHtml(note.author)+'</div>'
+        +(canDel?'<button class="ib-note-del" onclick="deleteIdea('+globalIdx+')" title="Remove">✕</button>':'')
+        +'</div>';
+    });
+    notesHtml+='<button class="ib-add-btn" onclick="openIdeaModalForZone(\'' + zone.id + '\')">'+'<span>＋</span>Add idea</button>';
+    notesHtml+='</div>';
+    zoneEl.innerHTML=
+      '<div class="ib-zone-hd"><div class="ib-zone-dot" style="background:'+zone.color+'"></div>'
+      +'<div class="ib-zone-title">'+zone.label+'</div>'
+      +'<div class="ib-zone-cnt">'+zoneNotes.length+' idea'+(zoneNotes.length!==1?'s':'')+'</div></div>'
+      +'<div class="ib-zone-prompt">'+zone.prompt+'</div>'
+      +notesHtml;
+    zonesEl.appendChild(zoneEl);
+  });
+  // Contribution breakdown
+  var people=getProjectPeople();
+  var contribEl=document.getElementById('ib-contrib');
+  if(contribEl){
+    if(!people.length){ contribEl.innerHTML='<div style="color:var(--muted);font-size:.82rem">No team members found for this project.</div>'; }
+    else {
+      var maxC=0;
+      people.forEach(function(name){ var c=ideas.filter(function(n){return n.author===name;}).length; if(c>maxC) maxC=c; });
+      if(!maxC) maxC=1;
+      contribEl.innerHTML=people.map(function(name){
+        var c=ideas.filter(function(n){return n.author===name;}).length;
+        var pct=Math.round(c/maxC*100);
+        return '<div class="ib-contrib-row"><div class="ib-contrib-name">'+escHtml(name)+'</div>'
+          +'<div class="ib-contrib-bw"><div class="ib-contrib-b" style="width:'+pct+'%"></div></div>'
+          +'<div class="ib-contrib-v">'+c+'</div></div>';
+      }).join('');
+    }
+  }
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function openIdeaModal(){
+  document.getElementById('idea-txt').value='';
+  document.getElementById('idea-zone').value='0';
+  openModal('modal-idea');
+  setTimeout(function(){document.getElementById('idea-txt').focus();},80);
+}
+function openIdeaModalForZone(zoneId){
+  document.getElementById('idea-txt').value='';
+  document.getElementById('idea-zone').value=zoneId;
+  openModal('modal-idea');
+  setTimeout(function(){document.getElementById('idea-txt').focus();},80);
+}
+function submitIdea(){
+  var txt=document.getElementById('idea-txt').value.trim();
+  if(!txt){showIbToast('Please enter an idea.');return;}
+  var zone=document.getElementById('idea-zone').value;
+  saveIdea({text:txt,zone:zone,author:sess.name,ts:Date.now()});
+  closeModals(); renderIdeaBoard();
+  showIbToast('💡 Idea posted to the board!');
+}
+
+// ── Stat card drill-down panels ───────────────────────────────────────────
+var _activeStatPanel = null;
+function toggleStatPanel(type) {
+  var wrap = document.getElementById('ib-stat-panel-wrap');
+  // Deactivate all cards
+  ['total','contributors','zones','mine'].forEach(function(t) {
+    var el = document.getElementById('ibstat-' + (t === 'zones' ? 'zones' : t === 'mine' ? 'mine' : t === 'contributors' ? 'contributors' : 'total'));
+    if(el) el.classList.remove('active-stat');
+  });
+  if (_activeStatPanel === type) {
+    wrap.innerHTML = '';
+    _activeStatPanel = null;
+    return;
+  }
+  _activeStatPanel = type;
+  document.getElementById('ibstat-' + (type === 'total' ? 'total' : type === 'contributors' ? 'contributors' : type === 'zones' ? 'zones' : 'mine')).classList.add('active-stat');
+  var ideas = getIdeas();
+  var html = '';
+  var NOTE_COLORS_HEX = ['#FFF9C4','#DDEEFF','#D4F5E3','#FFE4F0'];
+  var ZONE_COLORS = {'0':'#00B5AD','1':'#6B66FF','2':'#E53E3E','free':'#F0A500'};
+  var ZONE_LABELS = {'0':'Problem Definition','1':'Proposed Solutions','2':'Challenges & Risks','free':'Free Brainstorm'};
+
+  if (type === 'total') {
+    // Show all ideas grouped by zone
+    var title = 'All ' + ideas.length + ' Ideas';
+    var rows = '';
+    IB_ZONES.forEach(function(zone) {
+      var zn = ideas.filter(function(n){ return n.zone === zone.id; });
+      if (!zn.length) return;
+      rows += '<div style="margin-bottom:10px"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:' + zone.color + ';margin-bottom:5px">' + zone.label + ' (' + zn.length + ')</div>';
+      zn.forEach(function(n) {
+        rows += '<div class="ib-panel-item"><div class="ib-panel-dot" style="background:' + zone.color + '"></div>'
+          + '<div style="flex:1;font-size:.8rem;color:var(--navy)">' + escHtml(n.text) + '</div>'
+          + '<div style="font-size:.7rem;color:var(--muted);margin-left:8px;flex-shrink:0">' + escHtml(n.author) + '</div></div>';
+      });
+      rows += '</div>';
+    });
+    html = buildStatPanel(title, rows);
+
+  } else if (type === 'contributors') {
+    // Show each contributor with their idea count + colour bar
+    var people = getProjectPeople();
+    var title = 'Contributors (' + people.length + ')';
+    var contribCounts = {};
+    people.forEach(function(n){ contribCounts[n] = 0; });
+    ideas.forEach(function(n){ if(contribCounts[n.author] !== undefined) contribCounts[n.author]++; else contribCounts[n.author] = 1; });
+    var maxC = Math.max.apply(null, Object.values(contribCounts).concat([1]));
+    var rows = '';
+    // Sort by count desc
+    var sorted = Object.entries(contribCounts).sort(function(a,b){ return b[1]-a[1]; });
+    sorted.forEach(function(pair, i) {
+      var name = pair[0], count = pair[1];
+      var pct = Math.round(count / maxC * 100);
+      var color = NOTE_COLORS_HEX[i % NOTE_COLORS_HEX.length];
+      rows += '<div class="ib-panel-item">'
+        + '<div class="ib-panel-dot" style="background:' + color + ';border:1px solid rgba(0,0,0,.1)"></div>'
+        + '<div class="ib-panel-name">' + escHtml(name) + '</div>'
+        + '<div class="ib-panel-bar-wrap"><div class="ib-panel-bar" style="width:' + pct + '%;background:var(--teal)"></div></div>'
+        + '<div class="ib-panel-count">' + count + ' idea' + (count !== 1 ? 's' : '') + '</div>'
+        + '</div>';
+    });
+    if (!sorted.length) rows = '<div style="color:var(--muted);font-size:.82rem">No contributors yet.</div>';
+    html = buildStatPanel(title, rows);
+
+  } else if (type === 'zones') {
+    // Show zone breakdown with idea counts and previews
+    var title = 'Active Zones';
+    var rows = '';
+    IB_ZONES.forEach(function(zone) {
+      var zn = ideas.filter(function(n){ return n.zone === zone.id; });
+      var pct = ideas.length ? Math.round(zn.length / ideas.length * 100) : 0;
+      rows += '<div class="ib-panel-item" style="flex-direction:column;align-items:flex-start;gap:5px">'
+        + '<div style="display:flex;align-items:center;gap:8px;width:100%">'
+        + '<div class="ib-panel-dot" style="background:' + zone.color + '"></div>'
+        + '<div class="ib-panel-name">' + zone.label + '</div>'
+        + '<div class="ib-panel-bar-wrap"><div class="ib-panel-bar" style="width:' + pct + '%;background:' + zone.color + '"></div></div>'
+        + '<div class="ib-panel-count">' + zn.length + '</div>'
+        + '</div>';
+      if (zn.length) {
+        rows += '<div style="padding-left:17px;width:100%">';
+        zn.slice(0,2).forEach(function(n){
+          rows += '<div style="font-size:.74rem;color:var(--muted);padding:2px 0;border-left:2px solid ' + zone.color + ';padding-left:7px;margin-bottom:2px">' + escHtml(n.text.substr(0,60)) + (n.text.length > 60 ? '…' : '') + '</div>';
+        });
+        if (zn.length > 2) rows += '<div style="font-size:.7rem;color:var(--muted);padding-left:9px">+ ' + (zn.length - 2) + ' more…</div>';
+        rows += '</div>';
+      }
+      rows += '</div>';
+    });
+    html = buildStatPanel(title, rows);
+
+  } else if (type === 'mine') {
+    // Show current user's ideas
+    var myIdeas = ideas.filter(function(n){ return n.author === sess.name; });
+    var title = 'My Ideas (' + myIdeas.length + ')';
+    var rows = '';
+    if (!myIdeas.length) {
+      rows = '<div style="color:var(--muted);font-size:.82rem;text-align:center;padding:12px 0">You haven\'t posted any ideas yet.<br><br><button class="btn btn-t btn-sm" onclick="closeStatPanel();openIdeaModal()">＋ Add your first idea</button></div>';
+    } else {
+      myIdeas.forEach(function(n) {
+        var zone = IB_ZONES.find(function(z){ return z.id === n.zone; }) || IB_ZONES[0];
+        rows += '<div class="ib-panel-item">'
+          + '<div class="ib-panel-dot" style="background:' + zone.color + '"></div>'
+          + '<div style="flex:1"><div style="font-size:.8rem;color:var(--navy)">' + escHtml(n.text) + '</div>'
+          + '<div style="font-size:.7rem;color:var(--muted);margin-top:2px">' + zone.label + '</div></div>'
+          + '</div>';
+      });
+    }
+    html = buildStatPanel(title, rows);
+  }
+
+  wrap.innerHTML = html;
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function buildStatPanel(title, rows) {
+  return '<div class="ib-stat-panel">'
+    + '<div class="ib-stat-panel-title">' + title
+    + '<button class="ib-stat-panel-close" onclick="closeStatPanel()">✕</button></div>'
+    + rows
+    + '</div>';
+}
+
+function closeStatPanel() {
+  document.getElementById('ib-stat-panel-wrap').innerHTML = '';
+  _activeStatPanel = null;
+  ['ibstat-total','ibstat-contributors','ibstat-zones','ibstat-mine'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.classList.remove('active-stat');
+  });
+}
+
+function showIbToast(msg){
+  var t=document.getElementById('ib-toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2600);
+}
+
+async function runIdeaAI(){
+  var btn=document.getElementById('ib-ai-btn');
+  var wrap=document.getElementById('ib-ai-wrap');
+  var body=document.getElementById('ib-ai-body');
+  var ideas=getIdeas();
+  if(!ideas.length){showIbToast('Add some ideas first before running analysis.');return;}
+  btn.disabled=true; btn.textContent='✨ Analysing…';
+  wrap.style.display='block';
+  body.innerHTML='<span style="color:var(--muted)">Sending ideas to AI for analysis…</span>';
+  var p=db.projects.find(function(x){return x.id===currentProjectId;});
+  var projectName=p?p.name:'this project';
+  var notesText=ideas.map(function(n){
+    var zone=IB_ZONES.find(function(z){return z.id===n.zone;});
+    return '['+(zone?zone.label:'Zone')+'] '+n.author+': '+n.text;
+  }).join('\n');
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:1000,
+        messages:[{role:'user',content:
+          'You are a school project facilitator. Analyse these student brainstorm notes for the project "'+projectName+'". '
+          +'Return ONLY valid JSON (no markdown, no backticks):\n'
+          +'{"themes":["theme1","theme2","theme3"],"insight":"2 sentence group insight","standout":"one standout idea and why in 1-2 sentences","nextsteps":["step1","step2","step3"],"scores":{"name1":85,"name2":90}}\n\n'
+          +'Notes:\n'+notesText
+        }]
+      })
+    });
+    var data=await res.json();
+    var rawBlock=(data.content||[]).find(function(c){return c.type==='text';});
+    var raw=rawBlock?rawBlock.text:'{}';
+    var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    var themesHtml=(parsed.themes||[]).map(function(t){return '<span class="ib-theme-chip">'+escHtml(t)+'</span>';}).join('');
+    var stepsHtml='';
+    if(parsed.nextsteps&&Array.isArray(parsed.nextsteps)){
+      stepsHtml='<ol style="margin-top:5px;padding-left:18px;">'+parsed.nextsteps.map(function(s){return '<li style="margin-bottom:4px">'+escHtml(s)+'</li>';}).join('')+'</ol>';
+    }
+    var scoresHtml='';
+    if(parsed.scores){
+      var vals=Object.values(parsed.scores);
+      var maxS=vals.length?Math.max.apply(null,vals):100;
+      scoresHtml=Object.entries(parsed.scores).map(function(pair){
+        return '<div class="ib-pr"><div class="ib-pr-n">'+escHtml(pair[0])+'</div><div class="ib-pr-bw"><div class="ib-pr-b" style="width:'+Math.round(pair[1]/maxS*100)+'%"></div></div><div class="ib-pr-v">'+pair[1]+'</div></div>';
+      }).join('');
+    }
+    body.innerHTML=
+      '<div style="margin-bottom:12px"><strong>Key Themes</strong><div style="margin-top:5px">'+themesHtml+'</div></div>'
+      +'<div style="margin-bottom:12px"><strong>Group Insight</strong><div style="margin-top:4px;color:var(--muted)">'+(escHtml(parsed.insight||''))+'</div></div>'
+      +'<div style="margin-bottom:12px"><strong>Standout Idea</strong><div style="margin-top:4px;color:var(--muted)">'+(escHtml(parsed.standout||''))+'</div></div>'
+      +'<div style="margin-bottom:12px"><strong>Suggested Next Steps</strong>'+stepsHtml+'</div>'
+      +'<div><strong>Participation Scores</strong><div style="margin-top:7px">'+scoresHtml+'</div></div>';
+  }catch(e){
+    body.innerHTML='<span style="color:var(--red)">Analysis failed — check network connection and try again.</span>';
+  }
+  btn.disabled=false; btn.textContent='✨ AI Analyse';
+}
+
+
+// ── MODALS ────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o){o.classList.remove('open');}); }
+
+// ── INIT ──────────────────────────────────────────────────
+(function init(){
+  load();
+
+  // Seed demo data if empty
+  if(!db.schools.length){
+    var school={id:'s1',name:'Riverside High School'};
+    var admin={id:'u1',name:'Principal Johnson',role:'admin',schoolId:'s1',classIds:[]};
+    var cls1={id:'c1',schoolId:'s1',name:'Year 10 Business Studies',year:'Year 10'};
+    var cls2={id:'c2',schoolId:'s1',name:'Year 11 Design & Technology',year:'Year 11'};
+    var teacher1={id:'u2',name:'Ms. Thompson',role:'teacher',schoolId:'s1',classIds:['c1','c2']};
+    var teacher2={id:'u3',name:'Mr. Davis',role:'teacher',schoolId:'s1',classIds:['c2']};
+    var students=[
+      {id:'u4',name:'Jordan Kim',role:'student',schoolId:'s1',classIds:['c1']},
+      {id:'u5',name:'Priya Patel',role:'student',schoolId:'s1',classIds:['c1']},
+      {id:'u6',name:'Taylor Nguyen',role:'student',schoolId:'s1',classIds:['c1']},
+      {id:'u7',name:'Marcus Lee',role:'student',schoolId:'s1',classIds:['c1']},
+      {id:'u8',name:'Emma Chen',role:'student',schoolId:'s1',classIds:['c2']},
+      {id:'u9',name:'Liam Patel',role:'student',schoolId:'s1',classIds:['c2']},
+      {id:'u10',name:'Sofia Rodriguez',role:'student',schoolId:'s1',classIds:['c2']}
+    ];
+    var p1={id:'p1',schoolId:'s1',classId:'c1',name:'School Canteen Redesign',client:'Riverside High School',
+      students:['Jordan Kim','Priya Patel','Taylor Nguyen','Marcus Lee'],
+      data:{exec:'Ms. Thompson',pm:'Jordan Kim',supp:'Priya Patel',tl1:'Jordan Kim',tl2:'Taylor Nguyen',
+        why:'The current canteen is congested and poorly laid out. Students skip meals due to long queues.',
+        obj:'Redesign the canteen to reduce queue times by 50% and increase meal uptake by 30%.',
+        tm1:[{name:'Jordan Kim',color:'#E53E3E'},{name:'Priya Patel',color:'#ED8936'}],
+        tm2:[{name:'Taylor Nguyen',color:'#6B66FF'},{name:'Marcus Lee',color:'#805AD5'}],
+        prod:[['Modern food options','Updated menu','Nutritionist-approved; 3 tiers'],['Short queues','Self-order kiosks','2 kiosks; touchscreen'],['Comfortable seating','Refurbished area','60 seats']],
+        bud:[['Planning','0','2000',false],['Design','2000','8500',false],['Construction','8500','22000',false],['Fit-out','22000','25000',false]],
+        risk:[['Budget overrun','Medium','High'],['Student resistance','Low','Medium'],['Construction disruption','High','High']],
+        act:[['Confirm budget','Ms. Thompson',true],['Survey students','Jordan Kim',false]],
+        chg:[['Add outdoor seating','School Board',false]],
+        sched:[{stage:'Initiation',weeks:['●','●','','','','','','','','','','']},{stage:'Planning',weeks:['','●','●','●','','','','','','','','']},{stage:'Execution',weeks:['','','','●','●','●','●','','','','','']},{stage:'Closure',weeks:['','','','','','','●','●','●','●','','']}],
+        kanban:{todo:[{t:'Design floor plan',m:'must'},{t:'Source menu printing',m:'should'}],create:[{t:'Draft brief',m:'must'},{t:'Design kiosk UI',m:'should'}],done1:[{t:'Student survey',m:'must'},{t:'Site measurements',m:'must'}],check:[{t:'Review quotes',m:'must'}],done2:[{t:'Budget sign-off',m:'must'}],accepted:[{t:'Project scope approved',m:'must'}]},
+        ideaboard:[
+          {text:'Students want healthier options — salads and wraps',zone:'0',author:'Jordan Kim',ts:1779181200000},
+          {text:'Queue time exceeds 15 mins on busy days',zone:'0',author:'Priya Patel',ts:1779186600000},
+          {text:'Self-order kiosks could cut queue by 60%',zone:'1',author:'Taylor Nguyen',ts:1779794100000},
+          {text:'Redesign seating to allow 20% more students',zone:'1',author:'Marcus Lee',ts:1779804000000},
+          {text:'Construction noise may disrupt exam periods',zone:'2',author:'Jordan Kim',ts:1780390800000},
+          {text:'Budget may blow out if we add outdoor seating',zone:'2',author:'Ms. Thompson',ts:1780500600000},
+          {text:'What if we did a food truck pilot first?',zone:'free',author:'Priya Patel',ts:1780653600000}
+        ]
+      }};
+    var p2={id:'p2',schoolId:'s1',classId:'c2',name:'Library Digital Hub',client:'Riverside High School',
+      students:['Emma Chen','Liam Patel','Sofia Rodriguez'],
+      data:{exec:'Mr. Davis',pm:'Emma Chen',supp:'Liam Patel',tl1:'Emma Chen',tl2:'Liam Patel',
+        why:'Students lack access to digital research tools during study periods.',
+        obj:'Install 10 research workstations in the library by end of term.',
+        tm1:[{name:'Emma Chen',color:'#E53E3E'},{name:'Liam Patel',color:'#ED8936'}],
+        tm2:[{name:'Sofia Rodriguez',color:'#6B66FF'}],
+        prod:[['Digital research access','10 workstations','HP ProDesk; 27" monitors'],['Study support','Research software','Microsoft 365; databases']],
+        bud:[['Procurement','0','8000',false],['Installation','8000','11000',false],['Training','11000','12000',false]],
+        risk:[['Budget overrun','Low','Medium'],['Technical issues','Medium','High']],
+        act:[['Order computers','Mr. Davis',false],['Book installation','Emma Chen',false]],
+        chg:[],
+        sched:[{stage:'Planning',weeks:['●','●','','','','','','','','','','']},{stage:'Procurement',weeks:['','●','●','●','','','','','','','','']},{stage:'Installation',weeks:['','','','','●','●','','','','','','']},{stage:'Training',weeks:['','','','','','','●','●','','','','']}],
+        kanban:{todo:[{t:'Research workstation specs',m:'must'},{t:'Get quotes',m:'must'}],create:[{t:'Draft procurement plan',m:'should'}],done1:[{t:'Needs analysis complete',m:'must'}],check:[],done2:[],accepted:[{t:'Project approved by principal',m:'must'}]},
+        ideaboard:[
+          {text:'Students have no quiet digital space for research',zone:'0',author:'Emma Chen',ts:1779267600000},
+          {text:'Current library PCs are too old and slow',zone:'0',author:'Liam Patel',ts:1779274800000},
+          {text:'Install 10 new workstations with research databases',zone:'1',author:'Emma Chen',ts:1779890400000},
+          {text:'Create a booking system so everyone gets fair access',zone:'1',author:'Sofia Rodriguez',ts:1779962400000},
+          {text:'IT setup may delay go-live by several weeks',zone:'2',author:'Mr. Davis',ts:1780563600000},
+          {text:'Could we add a 3D printer station too?',zone:'free',author:'Liam Patel',ts:1780572600000}
+        ]
+      }};
+    db.schools.push(school);
+    db.users.push(admin,teacher1,teacher2,...students);
+    db.classes.push(cls1,cls2);
+    db.projects.push(p1,p2);
+    save();
+  }
+
+  populateSchoolSelect();
+  document.body.style.visibility='visible';
+})();
+</script>
+</body>
+</html>
