@@ -1959,11 +1959,17 @@ function addSched(name){
 }
 
 // ── KANBAN ────────────────────────────────────────────────
-function _addCard(col,txt){
+function _addCard(col,txt,moscow){
   if(!txt) return;
+  moscow=moscow||'must';
   var id='c'+(++cardN);
   var d=document.createElement('div'); d.className='kcard'; d.id=id; d.draggable=true;
+  d.setAttribute('data-moscow',moscow);
   d.ondragstart=function(e){e.dataTransfer.setData('text',id);};
+  var badge=document.createElement('span');
+  badge.className='moscow-badge moscow-'+moscow;
+  badge.textContent=moscow==='must'?'M':moscow==='should'?'S':'C';
+  d.appendChild(badge);
   var sp=document.createElement('span'); sp.style.flex='1'; sp.textContent=txt; d.appendChild(sp);
   var btn=document.createElement('button'); btn.className='del'; btn.textContent='✕';
   btn.onclick=(function(cid){return function(){var el=document.getElementById(cid);if(el)el.remove();updateStats();};})(id);
@@ -2965,11 +2971,48 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         tm2:[{name:'Taylor Nguyen',color:'#6B66FF'},{name:'Marcus Lee',color:'#805AD5'}],
         prod:[['Modern food options','Updated menu','Nutritionist-approved; 3 tiers'],['Short queues','Self-order kiosks','2 kiosks; touchscreen'],['Comfortable seating','Refurbished area','60 seats']],
         bud:[['Planning','0','2000',false],['Design','2000','8500',false],['Construction','8500','22000',false],['Fit-out','22000','25000',false]],
-        risk:[['Budget overrun','Medium','High'],['Student resistance','Low','Medium'],['Construction disruption','High','High']],
-        act:[['Confirm budget','Ms. Thompson',true],['Survey students','Jordan Kim',false]],
-        chg:[['Add outdoor seating','School Board',false]],
+        risk:[['Budget overrun','Medium','High'],['Student resistance','Low','Medium'],['Construction disruption','High','High'],['Supplier delay on kiosks','Medium','High'],['Health & safety non-compliance','Low','High']],
+        act:[['Confirm budget with principal','Ms. Thompson',true],['Complete student survey','Jordan Kim',true],['Book electrician for kiosk wiring','Priya Patel',true],['Chase kiosk supplier for delivery date','Marcus Lee',false],['Schedule H&S inspection','Jordan Kim',false],['Brief construction crew on noise limits','Priya Patel',false]],
+        chg:[['Add outdoor seating area','School Board',false],['Upgrade to 3 kiosks instead of 2','Ms. Thompson',true]],
         sched:[{stage:'Initiation',weeks:['●','●','','','','','','','','','','']},{stage:'Planning',weeks:['','●','●','●','','','','','','','','']},{stage:'Execution',weeks:['','','','●','●','●','●','','','','','']},{stage:'Closure',weeks:['','','','','','','●','●','●','●','','']}],
-        kanban:{todo:[{t:'Design floor plan',m:'must'},{t:'Source menu printing',m:'should'}],create:[{t:'Draft brief',m:'must'},{t:'Design kiosk UI',m:'should'}],done1:[{t:'Student survey',m:'must'},{t:'Site measurements',m:'must'}],check:[{t:'Review quotes',m:'must'}],done2:[{t:'Budget sign-off',m:'must'}],accepted:[{t:'Project scope approved',m:'must'}]},
+        kanban:{
+          todo:[
+            {t:'Install self-order kiosks',m:'must'},
+            {t:'Train staff on new POS system',m:'must'},
+            {t:'Final health & safety inspection',m:'must'},
+            {t:'Paint and decorate seating area',m:'should'},
+            {t:'Install signage and wayfinding',m:'should'},
+            {t:'Create student communication plan',m:'could'}
+          ],
+          create:[
+            {t:'Construct partition wall',m:'must'},
+            {t:'Wire electrical for kiosks',m:'must'},
+            {t:'Set up POS software',m:'must'},
+            {t:'Assemble new furniture',m:'should'}
+          ],
+          done1:[
+            {t:'Architectural drawings approved',m:'must'},
+            {t:'Material quotes confirmed',m:'must'},
+            {t:'Flooring installation complete',m:'must'},
+            {t:'Plumbing works complete',m:'must'}
+          ],
+          check:[
+            {t:'Test kiosk ordering flow',m:'must'},
+            {t:'Student focus group feedback',m:'should'},
+            {t:'Review seating layout flow',m:'should'}
+          ],
+          done2:[
+            {t:'Electrical safety sign-off',m:'must'},
+            {t:'Accessibility audit passed',m:'must'}
+          ],
+          accepted:[
+            {t:'Project scope approved',m:'must'},
+            {t:'Initial budget signed off',m:'must'},
+            {t:'Design concept approved',m:'must'},
+            {t:'Construction permit granted',m:'must'},
+            {t:'Student survey complete',m:'must'}
+          ]
+        },
         ideaboard:[
           {text:'Students want healthier options — salads and wraps',zone:'0',author:'Jordan Kim',ts:1779181200000},
           {text:'Queue time exceeds 15 mins on busy days',zone:'0',author:'Priya Patel',ts:1779186600000},
