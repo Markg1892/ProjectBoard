@@ -1065,7 +1065,7 @@ var db = { schools:[], classes:[], users:[], projects:[] };
 
 function genId(){ return '_' + Math.random().toString(36).substr(2,9); }
 
-function save(){ try{ localStorage.setItem('vc_db7', JSON.stringify(db)); }catch(e){} }
+function save(){ try{ localStorage.setItem('vc_db8', JSON.stringify(db)); }catch(e){} }
 function load(){
   try{
     // Clear stale data from previous versions
@@ -1073,7 +1073,8 @@ function load(){
     localStorage.removeItem('vc_db4');
     localStorage.removeItem('vc_db5');
     localStorage.removeItem('vc_db6');
-    var raw = localStorage.getItem('vc_db7');
+    localStorage.removeItem('vc_db7');
+    var raw = localStorage.getItem('vc_db8');
     if(raw) db = JSON.parse(raw);
   }catch(e){ db = {schools:[],classes:[],users:[],projects:[]}; }
 }
@@ -1775,7 +1776,7 @@ function loadProjectData(p, readOnly){
   });
 
   // Read-only for students
-  document.querySelectorAll('#project-editor-wrap input:not(.kadd input), #project-editor-wrap textarea, #project-editor-wrap select').forEach(function(el){ el.disabled=readOnly; });
+  document.querySelectorAll('#project-editor-wrap input:not(.kadd input), #project-editor-wrap textarea, #project-editor-wrap select:not(#moscow-select)').forEach(function(el){ el.disabled=readOnly; });
   document.querySelectorAll('#project-editor-wrap .del, #project-editor-wrap .btn-o, .kadd button, .kadd input').forEach(function(el){ el.disabled=readOnly; if(readOnly) el.style.opacity='.5'; });
 
   updateStats();
