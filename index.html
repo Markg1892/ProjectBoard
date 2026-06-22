@@ -680,6 +680,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
                 <div style="display:flex;gap:6px;align-items:center;font-size:.72rem;">
                   <span style="font-weight:600;color:var(--muted)">New card priority:</span>
                   <select id="moscow-select" style="border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:.72rem;font-family:'DM Sans',sans-serif;color:var(--navy);">
+                    <option value="all">⬜ All</option>
                     <option value="must">🔴 Must Have</option>
                     <option value="should">🟡 Should Have</option>
                     <option value="could">🟢 Could Have</option>
@@ -1962,26 +1963,29 @@ function addSched(name){
 // ── KANBAN ────────────────────────────────────────────────
 function _addCard(col,txt,moscow){
   if(!txt) return;
-  moscow=moscow||'must';
+  moscow=moscow||'all';
   var id='c'+(++cardN);
   var d=document.createElement('div'); d.className='kcard'; d.id=id; d.draggable=true;
   d.setAttribute('data-moscow',moscow);
   d.ondragstart=function(e){e.dataTransfer.setData('text',id);};
-  var badge=document.createElement('span');
-  badge.className='moscow-badge moscow-'+moscow;
-  badge.textContent=moscow==='must'?'M':moscow==='should'?'S':'C';
-  d.appendChild(badge);
+  if(moscow!=='all'){
+    var badge=document.createElement('span');
+    badge.className='moscow-badge moscow-'+moscow;
+    badge.textContent=moscow==='must'?'M':moscow==='should'?'S':'C';
+    d.appendChild(badge);
+  }
   var sp=document.createElement('span'); sp.style.flex='1'; sp.textContent=txt; d.appendChild(sp);
   var btn=document.createElement('button'); btn.className='del'; btn.textContent='✕';
   btn.onclick=(function(cid){return function(){var el=document.getElementById(cid);if(el)el.remove();updateStats();};})(id);
   d.appendChild(btn); document.getElementById('kc-'+col).appendChild(d);
 }
-function addCard(col){ 
-  var inp=document.getElementById('ki-'+col); 
+function addCard(col){
+  var inp=document.getElementById('ki-'+col); if(!inp) return;
+  var txt=inp.value.trim(); if(!txt) return;
   var sel=document.getElementById('moscow-select');
-  var moscow=sel?sel.value:'must';
-  _addCard(col,inp.value.trim(),moscow); 
-  inp.value=''; updateStats(); 
+  var moscow=sel?sel.value:'all';
+  _addCard(col,txt,moscow);
+  inp.value=''; inp.focus(); updateStats();
 }
 
 // ── WHITEBOARD ────────────────────────────────────────────
