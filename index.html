@@ -678,8 +678,8 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
               <div class="panel-t" style="display:flex;align-items:center;justify-content:space-between;">
                 <span>Task Progress Board</span>
                 <div style="display:flex;gap:6px;align-items:center;font-size:.72rem;">
-                  <span style="font-weight:600;color:var(--muted)">New card priority:</span>
-                  <select id="moscow-select" style="border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:.72rem;font-family:'DM Sans',sans-serif;color:var(--navy);">
+                  <span style="font-weight:600;color:var(--muted)">Filter &amp; priority:</span>
+                  <select id="moscow-select" onchange="filterKanban(this.value)" style="border:1.5px solid var(--border);border-radius:4px;padding:3px 8px;font-size:.72rem;font-family:'DM Sans',sans-serif;color:var(--navy);">
                     <option value="all">⬜ All</option>
                     <option value="must">🔴 Must Have</option>
                     <option value="should">🟡 Should Have</option>
@@ -1985,7 +1985,14 @@ function addCard(col){
   var sel=document.getElementById('moscow-select');
   var moscow=sel?sel.value:'all';
   _addCard(col,txt,moscow);
+  filterKanban(moscow); // keep new card visible under current filter
   inp.value=''; inp.focus(); updateStats();
+}
+function filterKanban(val){
+  document.querySelectorAll('.kcard').forEach(function(card){
+    var m=card.getAttribute('data-moscow')||'all';
+    card.style.display=(val==='all'||m===val)?'':'none';
+  });
 }
 
 // ── WHITEBOARD ────────────────────────────────────────────
