@@ -2114,8 +2114,11 @@ function showSSPanel(id){ currentSSId=id; renderSubStages(); saveCurrentProject(
 
 function addSubStage(){
   var id='ss-'+(++ssN);
-  substages.push({id:id,name:'Sub-Stage '+substages.length+1,packages:[],gateChecks:[false,false,false],done:false});
+  substages.push({id:id,name:'',packages:[],gateChecks:[false,false,false],done:false});
   currentSSId=id; renderSubStages(); saveCurrentProject();
+  // Focus the name input so the user types the name immediately
+  var inp=document.querySelector('.ss-name-input');
+  if(inp){ inp.focus(); inp.select(); }
 }
 
 function deleteSubStage(id){
