@@ -289,6 +289,53 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .gate-progress{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
 .gate-progress-bar{height:6px;background:var(--teal);border-radius:3px;transition:width .3s;}
 .gate-btn-row{display:flex;gap:8px;align-items:center;}
+/* ── SUB-STAGES ── */
+.ss-stepper{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin-bottom:18px;padding:14px 16px;background:var(--navy);border-radius:10px;}
+.ss-step{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;min-width:72px;}
+.ss-step:hover .ss-circle{border-color:rgba(255,255,255,.5);}
+.ss-circle{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;font-family:"Plus Jakarta Sans",sans-serif;color:rgba(255,255,255,.35);transition:all .2s;background:transparent;}
+.ss-step.ss-active .ss-circle{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 0 0 3px rgba(0,181,173,.22);}
+.ss-step.ss-done .ss-circle{background:var(--green);border-color:var(--green);color:#fff;}
+.ss-step.ss-done .ss-circle span{display:none;}
+.ss-step.ss-done .ss-circle::after{content:"✓";font-size:.8rem;}
+.ss-label{font-size:.58rem;font-weight:700;font-family:"Plus Jakarta Sans",sans-serif;letter-spacing:.3px;text-transform:uppercase;color:rgba(255,255,255,.3);white-space:nowrap;transition:color .2s;max-width:72px;text-align:center;overflow:hidden;text-overflow:ellipsis;}
+.ss-step.ss-active .ss-label{color:#fff;}
+.ss-step.ss-done .ss-label{color:rgba(255,255,255,.5);}
+.ss-line{flex:1;height:2px;background:rgba(255,255,255,.1);margin:0 4px 16px 4px;border-radius:1px;min-width:16px;transition:background .25s;}
+.ss-line.ss-done{background:var(--green);}
+.ss-add-btn{margin-left:8px;margin-bottom:14px;background:rgba(255,255,255,.08);border:1.5px dashed rgba(255,255,255,.25);color:rgba(255,255,255,.5);border-radius:20px;padding:3px 12px;font-size:.68rem;font-weight:700;font-family:"Plus Jakarta Sans",sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.ss-add-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
+/* Sub-stage panel */
+.ss-panel{background:#fff;border-radius:10px;border:1px solid var(--border);padding:18px 20px;margin-bottom:14px;}
+.ss-panel-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ss-name-input{flex:1;font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1rem;color:var(--navy);border:none;border-bottom:2px solid var(--border);padding:4px 0;background:transparent;letter-spacing:-.01em;transition:border-color .15s;}
+.ss-name-input:focus{outline:none;border-bottom-color:var(--teal);}
+.ss-del-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;padding:4px 6px;border-radius:4px;}
+.ss-del-btn:hover{background:#fff0f0;color:var(--red);}
+/* Work packages */
+.wp-list{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.wp-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--light);border-radius:6px;border:1px solid var(--border);transition:all .15s;}
+.wp-item.wp-done{background:#f0fffe;border-color:#b2ebe9;}
+.wp-check{width:16px;height:16px;cursor:pointer;accent-color:var(--teal);flex-shrink:0;}
+.wp-text{flex:1;font-size:.83rem;color:var(--navy);transition:all .15s;}
+.wp-item.wp-done .wp-text{text-decoration:line-through;color:var(--muted);}
+.wp-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.78rem;padding:2px 5px;border-radius:3px;opacity:0;transition:opacity .12s;}
+.wp-item:hover .wp-del{opacity:1;}
+.wp-del:hover{color:var(--red);}
+.wp-progress-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.wp-progress-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.wp-progress-bar{height:6px;background:var(--teal);border-radius:3px;transition:width .3s;}
+.wp-progress-label{font-size:.72rem;color:var(--muted);white-space:nowrap;font-weight:600;}
+.wp-add-row{display:flex;gap:6px;margin-top:4px;}
+.wp-add-inp{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:"DM Sans",sans-serif;font-size:.83rem;color:var(--navy);background:#fff;}
+.wp-add-inp:focus{outline:none;border-color:var(--teal);}
+.wp-add-btn{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;}
+/* Sub-stage gate */
+.ss-gate{background:linear-gradient(135deg,#f0fffe,#e8f7ff);border:1.5px solid var(--teal);border-radius:10px;padding:16px 18px;margin-top:4px;}
+.ss-gate-title{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.ss-gate-sub{font-size:.76rem;color:var(--muted);margin-bottom:12px;}
+.ss-empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.ss-empty-icon{font-size:2rem;margin-bottom:8px;}
 /* MoSCoW on kanban cards */
 .moscow-badge{font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
 .moscow-must{background:#FEE2E2;color:#991B1B;}
@@ -669,6 +716,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 
           <div class="sub-tab-bar">
             <div class="sub-tab active" id="subtab-progress" onclick="showSubTab('create','progress')">🔄 Progress Board</div>
+            <div class="sub-tab" id="subtab-substages" onclick="showSubTab('create','substages')">📦 Sub-Stages</div>
             <div class="sub-tab" id="subtab-risks" onclick="showSubTab('create','risks')">⚠️ Risks &amp; Actions</div>
           </div>
 
@@ -704,6 +752,12 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
                 <div class="kcol"><div class="kh t">Accepted</div><div class="kcards" id="kc-accepted"></div><div class="kadd"><input type="text" id="ki-accepted" placeholder="Add task…" onkeydown="if(event.key==='Enter')addCard('accepted')"><button onclick="addCard('accepted')">+</button></div></div>
               </div>
             </div>
+          </div>
+
+          <!-- Sub-Stages sub-tab -->
+          <div class="sec" id="sec-substages">
+            <div id="ss-stepper-wrap"></div>
+            <div id="ss-panel-wrap"></div>
           </div>
 
           <!-- Risks sub-tab -->
@@ -1066,16 +1120,11 @@ var db = { schools:[], classes:[], users:[], projects:[] };
 
 function genId(){ return '_' + Math.random().toString(36).substr(2,9); }
 
-function save(){ try{ localStorage.setItem('vc_db8', JSON.stringify(db)); }catch(e){} }
+function save(){ try{ localStorage.setItem('vc_db9', JSON.stringify(db)); }catch(e){} }
 function load(){
   try{
-    // Clear stale data from previous versions
-    localStorage.removeItem('vc_db');
-    localStorage.removeItem('vc_db4');
-    localStorage.removeItem('vc_db5');
-    localStorage.removeItem('vc_db6');
-    localStorage.removeItem('vc_db7');
-    var raw = localStorage.getItem('vc_db8');
+    ['vc_db','vc_db4','vc_db5','vc_db6','vc_db7','vc_db8'].forEach(function(k){ localStorage.removeItem(k); });
+    var raw = localStorage.getItem('vc_db9');
     if(raw) db = JSON.parse(raw);
   }catch(e){ db = {schools:[],classes:[],users:[],projects:[]}; }
 }
@@ -1672,7 +1721,7 @@ function blankData(){
   return {exec:'',pm:'',supp:'',tl1:'',tl2:'',why:'',obj:'',tm1:[],tm2:[],
     prod:[],bud:[],risk:[],act:[],chg:[],sched:[],
     kanban:{todo:[],create:[],done1:[],check:[],done2:[],accepted:[]},
-    ideaboard:[]};
+    substages:[],ideaboard:[]};
 }
 
 function openProject(id){
@@ -1688,6 +1737,7 @@ function openProject(id){
     if(!p.data.chg)      p.data.chg=[];
     if(!p.data.sched)    p.data.sched=[];
     if(!p.data.kanban)   p.data.kanban={todo:[],create:[],done1:[],check:[],done2:[],accepted:[]};
+    if(!p.data.substages) p.data.substages=[];
     if(!p.data.ideaboard)p.data.ideaboard=[];
     // Ensure kanban columns exist
     ['todo','create','done1','check','done2','accepted'].forEach(function(c){
@@ -1776,6 +1826,11 @@ function loadProjectData(p, readOnly){
     });
   });
 
+  // Sub-stages
+  substages = d.substages ? JSON.parse(JSON.stringify(d.substages)) : [];
+  currentSSId = substages.length ? substages[0].id : null;
+  renderSubStages();
+
   // Read-only for students
   document.querySelectorAll('#project-editor-wrap input:not(.kadd input), #project-editor-wrap textarea, #project-editor-wrap select:not(#moscow-select)').forEach(function(el){ el.disabled=readOnly; });
   document.querySelectorAll('#project-editor-wrap .del, #project-editor-wrap .btn-o, .kadd button, .kadd input').forEach(function(el){ el.disabled=readOnly; if(readOnly) el.style.opacity='.5'; });
@@ -1827,6 +1882,7 @@ function captureData(){
     tm1:JSON.parse(JSON.stringify(tm1)), tm2:JSON.parse(JSON.stringify(tm2)),
     prod:td('tb-prod'),bud:td('tb-bud'),risk:td('tb-risk'),act:td('tb-act'),chg:td('tb-chg'),
     sched:sr, kanban:{todo:kd('todo'),create:kd('create'),done1:kd('done1'),check:kd('check'),done2:kd('done2'),accepted:kd('accepted')},
+    substages:JSON.parse(JSON.stringify(substages)),
     ideaboard:(function(){ var p=db.projects.find(function(x){return x.id===currentProjectId;}); return(p&&p.data&&p.data.ideaboard)?p.data.ideaboard:[]; })()
   };
 }
@@ -1836,7 +1892,7 @@ function captureData(){
 var stageMap = {
   explore: { subs: ['ideas','brief'],                    default: 'ideas' },
   plan:    { subs: ['input','schedule'],                  default: 'input' },
-  create:  { subs: ['progress','risks'],                  default: 'progress' },
+  create:  { subs: ['progress','substages','risks'],       default: 'progress' },
   handover:{ subs: ['wb'],                               default: 'wb' },
   reports: { subs: ['sec-reports','sec-idea-reports','sec-student-reports'],   default: 'sec-reports' }
 };
@@ -1958,6 +2014,159 @@ function addSched(name){
   for(var i=0;i<12;i++) c+='<td><input type="text" style="width:30px;text-align:center"></td>';
   c+='<td><button class="del" onclick="delRow(this)">✕</button></td>';
   tr.innerHTML=c; document.getElementById('tb-sched').appendChild(tr);
+}
+
+// ── SUB-STAGES ────────────────────────────────────────────
+var substages = [];
+var currentSSId = null;
+var ssN = 0; var wpN = 0;
+
+function renderSubStages(){
+  var sw = document.getElementById('ss-stepper-wrap');
+  var pw = document.getElementById('ss-panel-wrap');
+  if(!sw||!pw) return;
+
+  if(!substages.length){
+    sw.innerHTML='';
+    pw.innerHTML='<div class="ss-empty"><div class="ss-empty-icon">📦</div><div style="font-weight:700;color:var(--navy);margin-bottom:4px">No sub-stages yet</div><div style="font-size:.8rem">Break the Create phase into steps like Design, Build, Test…</div><br><button class="btn btn-t btn-sm" onclick="addSubStage()">+ Add First Sub-Stage</button></div>';
+    return;
+  }
+
+  // Stepper
+  var sh='<div class="ss-stepper">';
+  substages.forEach(function(ss,i){
+    var cls='ss-step'+(ss.id===currentSSId?' ss-active':ss.done?' ss-done':'');
+    sh+='<div class="'+cls+'" onclick="showSSPanel(\''+ss.id+'\')"><div class="ss-circle"><span>'+(i+1)+'</span></div><div class="ss-label">'+esc(ss.name||'Sub-Stage '+(i+1))+'</div></div>';
+    if(i<substages.length-1) sh+='<div class="ss-line'+(ss.done?' ss-done':'')+'"></div>';
+  });
+  sh+='<button class="ss-add-btn" onclick="addSubStage()">+ Add</button></div>';
+  sw.innerHTML=sh;
+
+  // Active panel
+  var ss=substages.find(function(x){return x.id===currentSSId;});
+  if(!ss){ pw.innerHTML=''; return; }
+
+  var done=ss.packages.filter(function(p){return p.done;}).length;
+  var total=ss.packages.length;
+  var pct=total?Math.round(done/total*100):0;
+
+  var ph='<div class="ss-panel">';
+  ph+='<div class="ss-panel-hd">';
+  ph+='<input class="ss-name-input" value="'+esc(ss.name)+'" placeholder="Sub-stage name…" onchange="renameSubStage(\''+ss.id+'\',this.value)" oninput="renameSubStage(\''+ss.id+'\',this.value)">';
+  ph+='<button class="ss-del-btn" onclick="deleteSubStage(\''+ss.id+'\')" title="Delete sub-stage">🗑</button>';
+  ph+='</div>';
+
+  // Progress bar
+  ph+='<div class="wp-progress-row"><div class="wp-progress-bar-wrap"><div class="wp-progress-bar" style="width:'+pct+'%"></div></div><span class="wp-progress-label">'+done+' / '+total+' complete</span></div>';
+
+  // Work packages list
+  ph+='<div class="wp-list">';
+  if(!ss.packages.length){
+    ph+='<div style="font-size:.8rem;color:var(--muted);padding:8px 0">No work packages yet — add the first one below.</div>';
+  }
+  ss.packages.forEach(function(wp){
+    var dc=wp.done?' wp-done':'';
+    ph+='<div class="wp-item'+dc+'" id="wp-'+wp.id+'">';
+    ph+='<input type="checkbox" class="wp-check"'+(wp.done?' checked':'')+'onchange="toggleWP(\''+ss.id+'\',\''+wp.id+'\')">';
+    ph+='<span class="wp-text">'+esc(wp.text)+'</span>';
+    ph+='<button class="wp-del" onclick="deleteWP(\''+ss.id+'\',\''+wp.id+'\')" title="Remove">✕</button>';
+    ph+='</div>';
+  });
+  ph+='</div>';
+
+  // Add work package input
+  ph+='<div class="wp-add-row">';
+  ph+='<input class="wp-add-inp" id="wp-inp-'+ss.id+'" placeholder="Add work package…" onkeydown="if(event.key===\'Enter\')addWP(\''+ss.id+'\')">';
+  ph+='<button class="wp-add-btn" onclick="addWP(\''+ss.id+'\')">+ Add</button>';
+  ph+='</div>';
+  ph+='</div>';
+
+  // End-of-sub-stage gate
+  var gc=ss.gateChecks||[false,false,false];
+  var gDone=gc.filter(Boolean).length;
+  var gPct=Math.round(gDone/3*100);
+  ph+='<div class="ss-gate">';
+  ph+='<div class="ss-gate-title">✅ End-of-Sub-Stage Check — '+esc(ss.name)+'</div>';
+  ph+='<div class="ss-gate-sub">Before moving to the next sub-stage, confirm:</div>';
+  ph+='<div class="gate-progress"><div class="gate-progress-bar" style="width:'+gPct+'%"></div></div>';
+  ph+='<div class="gate-checks">';
+  var gLabels=['All work packages are marked complete','Output has been reviewed by the team','Teacher / supervisor has signed off'];
+  gLabels.forEach(function(lbl,i){
+    ph+='<label class="gate-check'+(gc[i]?' checked-item':'')+'"><input type="checkbox"'+(gc[i]?' checked':'')+' onchange="updateSSGate(\''+ss.id+'\','+i+',this.checked)"> '+lbl+'</label>';
+  });
+  ph+='</div>';
+  var nextSS=substages[substages.indexOf(ss)+1];
+  ph+='<div class="gate-btn-row">';
+  if(nextSS){
+    ph+='<button class="btn btn-t" onclick="completeSubStage(\''+ss.id+'\')">Complete &amp; move to '+esc(nextSS.name)+' →</button>';
+  } else {
+    ph+='<button class="btn btn-navy" onclick="completeSubStage(\''+ss.id+'\')">Complete Sub-Stage ✓</button>';
+  }
+  ph+='<span style="font-size:.76rem;color:var(--muted)">'+gDone+'/3 checks complete</span>';
+  ph+='</div></div>';
+
+  pw.innerHTML=ph;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showSSPanel(id){ currentSSId=id; renderSubStages(); saveCurrentProject(); }
+
+function addSubStage(){
+  var id='ss-'+(++ssN);
+  substages.push({id:id,name:'Sub-Stage '+substages.length+1,packages:[],gateChecks:[false,false,false],done:false});
+  currentSSId=id; renderSubStages(); saveCurrentProject();
+}
+
+function deleteSubStage(id){
+  if(!confirm('Delete this sub-stage and all its work packages?')) return;
+  substages=substages.filter(function(s){return s.id!==id;});
+  currentSSId=substages.length?substages[substages.length-1].id:null;
+  renderSubStages(); saveCurrentProject();
+}
+
+function renameSubStage(id,name){
+  var ss=substages.find(function(s){return s.id===id;}); if(!ss) return;
+  ss.name=name; saveCurrentProject();
+  // update stepper label without full re-render
+  var el=document.querySelector('.ss-step.ss-active .ss-label');
+  if(el) el.textContent=name||'Sub-Stage';
+}
+
+function addWP(ssId){
+  var inp=document.getElementById('wp-inp-'+ssId); if(!inp) return;
+  var txt=inp.value.trim(); if(!txt) return;
+  var ss=substages.find(function(s){return s.id===ssId;}); if(!ss) return;
+  ss.packages.push({id:'wp-'+(++wpN),text:txt,done:false});
+  inp.value=''; renderSubStages(); saveCurrentProject();
+  // refocus input after re-render
+  var ni=document.getElementById('wp-inp-'+ssId); if(ni) ni.focus();
+}
+
+function toggleWP(ssId,wpId){
+  var ss=substages.find(function(s){return s.id===ssId;}); if(!ss) return;
+  var wp=ss.packages.find(function(p){return p.id===wpId;}); if(!wp) return;
+  wp.done=!wp.done; renderSubStages(); saveCurrentProject();
+}
+
+function deleteWP(ssId,wpId){
+  var ss=substages.find(function(s){return s.id===ssId;}); if(!ss) return;
+  ss.packages=ss.packages.filter(function(p){return p.id!==wpId;});
+  renderSubStages(); saveCurrentProject();
+}
+
+function updateSSGate(ssId,idx,val){
+  var ss=substages.find(function(s){return s.id===ssId;}); if(!ss) return;
+  if(!ss.gateChecks) ss.gateChecks=[false,false,false];
+  ss.gateChecks[idx]=val; renderSubStages(); saveCurrentProject();
+}
+
+function completeSubStage(id){
+  var ss=substages.find(function(s){return s.id===id;}); if(!ss) return;
+  ss.done=true;
+  var idx=substages.indexOf(ss);
+  if(substages[idx+1]){ currentSSId=substages[idx+1].id; }
+  renderSubStages(); saveCurrentProject();
 }
 
 // ── KANBAN ────────────────────────────────────────────────
@@ -2987,6 +3196,36 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         act:[['Confirm budget with principal','Ms. Thompson',true],['Complete student survey','Jordan Kim',true],['Book electrician for kiosk wiring','Priya Patel',true],['Chase kiosk supplier for delivery date','Marcus Lee',false],['Schedule H&S inspection','Jordan Kim',false],['Brief construction crew on noise limits','Priya Patel',false]],
         chg:[['Add outdoor seating area','School Board',false],['Upgrade to 3 kiosks instead of 2','Ms. Thompson',true]],
         sched:[{stage:'Initiation',weeks:['●','●','','','','','','','','','','']},{stage:'Planning',weeks:['','●','●','●','','','','','','','','']},{stage:'Execution',weeks:['','','','●','●','●','●','','','','','']},{stage:'Closure',weeks:['','','','','','','●','●','●','●','','']}],
+        substages:[
+          {id:'ss-1',name:'Design',done:true,gateChecks:[true,true,true],packages:[
+            {id:'wp-1',text:'Create canteen floor plan',done:true},
+            {id:'wp-2',text:'Select materials and finishes',done:true},
+            {id:'wp-3',text:'Design self-order kiosk layout',done:true},
+            {id:'wp-4',text:'Get client sign-off on design',done:true}
+          ]},
+          {id:'ss-2',name:'Procurement',done:true,gateChecks:[true,true,true],packages:[
+            {id:'wp-5',text:'Get quotes from 3 suppliers',done:true},
+            {id:'wp-6',text:'Order kiosk hardware',done:true},
+            {id:'wp-7',text:'Purchase flooring materials',done:true},
+            {id:'wp-8',text:'Order new furniture',done:true},
+            {id:'wp-9',text:'Confirm delivery dates',done:true}
+          ]},
+          {id:'ss-3',name:'Construction',done:false,gateChecks:[false,false,false],packages:[
+            {id:'wp-10',text:'Construct partition wall',done:true},
+            {id:'wp-11',text:'Complete plumbing works',done:true},
+            {id:'wp-12',text:'Install flooring',done:true},
+            {id:'wp-13',text:'Electrical wiring for kiosks',done:false},
+            {id:'wp-14',text:'Paint and decorate',done:false},
+            {id:'wp-15',text:'Install signage',done:false}
+          ]},
+          {id:'ss-4',name:'Fit-Out',done:false,gateChecks:[false,false,false],packages:[
+            {id:'wp-16',text:'Install self-order kiosks',done:false},
+            {id:'wp-17',text:'Set up POS software',done:false},
+            {id:'wp-18',text:'Assemble and place furniture',done:false},
+            {id:'wp-19',text:'Train staff on new system',done:false},
+            {id:'wp-20',text:'Final health & safety inspection',done:false}
+          ]}
+        ],
         kanban:{
           todo:[
             {t:'Install self-order kiosks',m:'must'},
