@@ -818,8 +818,8 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
         <div class="stage-panel" id="stage-create">
 
           <div class="sub-tab-bar">
-            <div class="sub-tab active" id="subtab-progress" onclick="showSubTab('create','progress')">🔄 Progress Board</div>
-            <div class="sub-tab" id="subtab-substages" onclick="showSubTab('create','substages')">📦 Sub-Stages</div>
+            <div class="sub-tab active" id="subtab-substages" onclick="showSubTab('create','substages')">📦 Sub-Stages</div>
+            <div class="sub-tab" id="subtab-progress" onclick="showSubTab('create','progress')">🔄 Progress Board</div>
             <div class="sub-tab" id="subtab-risks" onclick="showSubTab('create','risks')">⚠️ Risks &amp; Actions</div>
           </div>
 
@@ -1999,12 +1999,12 @@ function captureData(){
 var stageMap = {
   explore: { subs: ['ideas','brief'],                    default: 'ideas' },
   plan:    { subs: ['input','schedule'],                  default: 'input' },
-  create:  { subs: ['progress','substages','risks'],       default: 'progress' },
+  create:  { subs: ['substages','progress','risks'],       default: 'substages' },
   handover:{ subs: ['wb'],                               default: 'wb' },
   reports: { subs: ['sec-reports','sec-idea-reports','sec-student-reports'],   default: 'sec-reports' }
 };
 var currentStage = 'explore';
-var currentSubs  = { explore:'ideas', plan:'input', create:'progress', handover:'wb', reports:'sec-reports' };
+var currentSubs  = { explore:'ideas', plan:'input', create:'substages', handover:'wb', reports:'sec-reports' };
 
 function showStage(stage){
   currentStage = stage;
