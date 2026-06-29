@@ -336,6 +336,26 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ss-gate-sub{font-size:.76rem;color:var(--muted);margin-bottom:12px;}
 .ss-empty{text-align:center;padding:40px 20px;color:var(--muted);}
 .ss-empty-icon{font-size:2rem;margin-bottom:8px;}
+/* ── GANTT SCHEDULE ── */
+.sched-label{font-size:.8rem;font-weight:600;color:var(--navy);padding:0 10px;white-space:nowrap;vertical-align:middle;}
+.sched-sub .sched-label{padding-left:22px;color:var(--muted);font-size:.75rem;font-weight:500;}
+.sched-sub{background:#fafcff;}
+.gcell{padding:0;width:44px;min-width:38px;cursor:pointer;height:34px;vertical-align:middle;}
+.gcell:hover:not(.gfilled) .gbar{background:rgba(0,181,173,.18);border-radius:5px;margin:12px 5px;}
+.gcell:hover.gfilled .gbar{opacity:.75;}
+.gbar{height:10px;margin:12px 0;background:transparent;transition:background .1s;}
+.gcell.gfilled .gbar{background:var(--teal);}
+.gcell.gstart .gbar{border-radius:5px 0 0 5px;margin-left:5px;}
+.gcell.gend .gbar{border-radius:0 5px 5px 0;margin-right:5px;}
+.gcell.gsolo .gbar{border-radius:5px;margin:12px 5px;}
+.gbar-purple{background:var(--purple)!important;}
+.gbar-gold{background:var(--gold)!important;}
+.gbar-green{background:var(--green)!important;}
+.gbar-navy{background:var(--navy)!important;}
+.gbar-teal{background:var(--teal)!important;}
+.gbar-rose{background:#e05;!important;}
+.sched-row-add{margin-top:10px;display:flex;gap:8px;align-items:center;}
+
 /* MoSCoW on kanban cards */
 .moscow-badge{font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;}
 .moscow-must{background:#FEE2E2;color:#991B1B;}
@@ -764,7 +784,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
                   <tbody id="tb-sched"></tbody>
                 </table>
               </div>
-              <button class="btn btn-o btn-sm" style="margin-top:10px" onclick="addSched()">+ Add Stage</button>
+              <div class="sched-row-add">
+                <button class="btn btn-o btn-sm" onclick="addSchedRow()">+ Add Row</button>
+                <button class="btn btn-sm" style="background:var(--light);color:var(--muted);border:1px solid var(--border)" onclick="syncSchedFromStages()">↺ Sync from Stages</button>
+              </div>
             </div>
           </div>
 
@@ -1887,15 +1910,15 @@ function loadProjectData(p, readOnly){
   loadTbl('tb-chg', d.chg, addChg);
 
   if(d.sched&&d.sched.length){
-    d.sched.forEach(function(s){
-      addSched();
-      var rows=document.getElementById('tb-sched').querySelectorAll('tr');
-      var tr=rows[rows.length-1];
-      var ins=tr.querySelectorAll('input[type=text]');
-      ins[0].value=s.stage;
-      if(s.weeks) s.weeks.forEach(function(v,i){ if(ins[i+1]) ins[i+1].value=v; });
+    schedRows=d.sched.map(function(s){
+      var weeks=(s.weeks||[]).map(_schedBool);
+      while(weeks.length<12) weeks.push(false);
+      return{stage:s.stage||'',weeks:weeks,color:s.color||'teal',level:s.level||0};
     });
-  } else { addSched(); }
+  } else {
+    schedRows=getDefaultSchedRows();
+  }
+  buildScheduleGantt();
 
   var kCols=['todo','create','done1','check','done2','accepted'];
   kCols.forEach(function(col){
@@ -1957,12 +1980,7 @@ function captureData(){
       var moscow=card.getAttribute('data-moscow')||'must';
       return txt?{t:txt,m:moscow}:null;
     }).filter(Boolean); }
-  var sr=[];
-  document.getElementById('tb-sched').querySelectorAll('tr').forEach(function(tr){
-    var ins=tr.querySelectorAll('input[type=text]'); if(!ins.length) return;
-    var stage=ins[0].value.trim(); var weeks=Array.from(ins).slice(1).map(function(i){return i.value.trim();});
-    if(stage) sr.push({stage:stage,weeks:weeks});
-  });
+  var sr=JSON.parse(JSON.stringify(schedRows));
   return{
     exec:document.getElementById('f-exec').value, pm:document.getElementById('f-pm').value,
     supp:document.getElementById('f-supp').value, tl1:document.getElementById('f-tl1').value,
@@ -2097,13 +2115,96 @@ function addBud(){  addRow('tb-bud', '<td><input type="text" placeholder="Stage�
 function addRisk(){ addRow('tb-risk','<td><input type="text" placeholder="Risk…"></td><td><select><option>Low</option><option>Medium</option><option>High</option></select></td><td><select><option>Low</option><option>Medium</option><option>High</option></select></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
 function addAct(){  addRow('tb-act', '<td><input type="text" placeholder="Action…"></td><td><input type="text" placeholder="Owner…"></td><td style="text-align:center"><input type="checkbox"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
 function addChg(){  addRow('tb-chg', '<td><input type="text" placeholder="Change…"></td><td><input type="text" placeholder="Who…"></td><td style="text-align:center"><input type="checkbox"></td><td><button class="del" onclick="delRow(this)">✕</button></td>'); }
-function addSched(name){
-  var tr=document.createElement('tr');
-  var c='<td><input type="text" value="'+(name||'')+'" placeholder="Stage…" style="font-weight:600"></td>';
-  for(var i=0;i<12;i++) c+='<td><input type="text" style="width:30px;text-align:center"></td>';
-  c+='<td><button class="del" onclick="delRow(this)">✕</button></td>';
-  tr.innerHTML=c; document.getElementById('tb-sched').appendChild(tr);
+// ── GANTT SCHEDULE ─────────────────────────────────────────
+var schedRows = [];
+
+var SCHED_COLORS = {
+  explore:'purple', plan:'gold',
+  create:'teal', handover:'green', reports:'navy'
+};
+
+function _schedBool(v){ return v===true||v==='●'||v==='1'; }
+
+function getDefaultSchedRows(){
+  var rows=[];
+  rows.push({stage:'Explore Idea',weeks:Array(12).fill(false),color:'purple',level:0});
+  rows.push({stage:'Plan',weeks:Array(12).fill(false),color:'gold',level:0});
+  if(substages&&substages.length){
+    substages.forEach(function(ss){
+      rows.push({stage:'Create — '+(ss.name||'Sub-Stage'),weeks:Array(12).fill(false),color:'teal',level:1});
+    });
+  } else {
+    rows.push({stage:'Create',weeks:Array(12).fill(false),color:'teal',level:0});
+  }
+  rows.push({stage:'Handover',weeks:Array(12).fill(false),color:'green',level:0});
+  rows.push({stage:'Reports',weeks:Array(12).fill(false),color:'navy',level:0});
+  return rows;
 }
+
+function syncSchedFromStages(){
+  if(!confirm('This will replace current rows with rows matching the project stages and sub-stages. Continue?')) return;
+  schedRows=getDefaultSchedRows();
+  buildScheduleGantt(); saveCurrentProject();
+}
+
+function buildScheduleGantt(){
+  var tbody=document.getElementById('tb-sched'); if(!tbody) return;
+  tbody.innerHTML='';
+  schedRows.forEach(function(row,ri){
+    var weeks=row.weeks||Array(12).fill(false);
+    while(weeks.length<12) weeks.push(false);
+    var tr=document.createElement('tr');
+    if(row.level) tr.className='sched-sub';
+    var tdLabel=document.createElement('td');
+    tdLabel.className='sched-label';
+    // Editable label
+    var inp=document.createElement('input');
+    inp.type='text'; inp.value=row.stage||'';
+    inp.style.cssText='border:none;background:transparent;font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;width:100%;min-width:90px;outline:none;padding:0;';
+    inp.onchange=(function(r){return function(){schedRows[r].stage=this.value;saveCurrentProject();};})(ri);
+    tdLabel.appendChild(inp);
+    tr.appendChild(tdLabel);
+    for(var wi=0;wi<12;wi++){
+      var filled=!!weeks[wi];
+      var prev=wi>0&&!!weeks[wi-1];
+      var next=wi<11&&!!weeks[wi+1];
+      var td=document.createElement('td');
+      var cls='gcell'+(filled?' gfilled':'');
+      if(filled){
+        if(!prev&&!next) cls+=' gsolo';
+        else if(!prev) cls+=' gstart';
+        else if(!next) cls+=' gend';
+      }
+      td.className=cls;
+      var bar=document.createElement('div');
+      bar.className='gbar'+(filled?' gbar-'+(row.color||'teal'):'');
+      td.appendChild(bar);
+      td.onclick=(function(r,w){return function(){toggleGanttCell(r,w);};})(ri,wi);
+      tr.appendChild(td);
+    }
+    var tdDel=document.createElement('td');
+    var delBtn=document.createElement('button');
+    delBtn.className='del'; delBtn.textContent='✕';
+    delBtn.onclick=(function(r){return function(){schedRows.splice(r,1);buildScheduleGantt();saveCurrentProject();};})(ri);
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleGanttCell(ri,ci){
+  if(!schedRows[ri]) return;
+  var w=schedRows[ri].weeks; if(!w) w=schedRows[ri].weeks=Array(12).fill(false);
+  w[ci]=!w[ci]; buildScheduleGantt(); saveCurrentProject();
+}
+
+function addSchedRow(){
+  schedRows.push({stage:'New Stage',weeks:Array(12).fill(false),color:'teal',level:0});
+  buildScheduleGantt(); saveCurrentProject();
+}
+
+// Legacy alias kept so any old saved HTML onclick refs don't break
+function addSched(){ addSchedRow(); }
 
 // ── SUB-STAGES ────────────────────────────────────────────
 var substages = [];
@@ -2344,7 +2445,17 @@ function buildWB(){
   var sh='<div style="overflow-x:auto"><table class="wb-tbl" style="min-width:480px"><thead><tr><th style="min-width:90px">Stage</th>';
   for(var w=1;w<=12;w++) sh+='<th style="text-align:center;width:36px">W'+w+'</th>';
   sh+='</tr></thead><tbody>';
-  if(sched.length){ sched.forEach(function(r){ sh+='<tr><td style="font-weight:600">'+r.stage+'</td>'; r.weeks.forEach(function(v){sh+='<td style="text-align:center">'+(v?'●':'')+'</td>';}); sh+='</tr>'; }); }
+  if(schedRows.length){ schedRows.forEach(function(r){
+    var weeks=r.weeks||[];
+    sh+='<tr><td style="font-weight:'+(r.level?'400':'600')+';padding-left:'+(r.level?'14':'4')+'px;font-size:.7rem">'+r.stage+'</td>';
+    weeks.forEach(function(v,i){
+      var filled=!!v, prev=i>0&&!!weeks[i-1], next=i<weeks.length-1&&!!weeks[i+1];
+      var radius=''; if(filled){if(!prev&&!next)radius='border-radius:4px;'; else if(!prev)radius='border-radius:4px 0 0 4px;'; else if(!next)radius='border-radius:0 4px 4px 0;';}
+      var barColor={teal:'#00B5AD',purple:'#6366F1',gold:'#F59E0B',green:'#10B981',navy:'#0B1F3A'}[r.color||'teal']||'#00B5AD';
+      sh+='<td style="padding:0;height:24px"><div style="height:8px;margin:8px 0;'+radius+'background:'+(filled?barColor:'transparent')+'"></div></td>';
+    });
+    sh+='</tr>';
+  }); }
   else sh+='<tr><td colspan="13" style="color:#bbb;text-align:center">—</td></tr>';
   sh+='</tbody></table></div>';
   h+='<div style="margin-bottom:8px">'+box('Schedule',sh)+'</div>';
@@ -2680,11 +2791,10 @@ function buildReports(){
   var kLabels=['To Do','Create','Done','Check/Test','Done(2)','Accepted'];
   var kCounts=kCols.map(function(col){var el=document.getElementById('kc-'+col);return el?el.querySelectorAll('.kcard').length:0;});
   var schedStages=[],schedWeeks=[];
-  document.getElementById('tb-sched').querySelectorAll('tr').forEach(function(tr){
-    var ins=tr.querySelectorAll('input[type=text]'); if(!ins.length) return;
-    var s=ins[0].value.trim(); if(!s) return;
-    var a=Array.from(ins).slice(1).filter(function(i){return i.value.trim()!=='';}).length;
-    schedStages.push(s); schedWeeks.push(a);
+  schedRows.forEach(function(r){
+    if(!r.stage) return;
+    schedStages.push(r.stage);
+    schedWeeks.push((r.weeks||[]).filter(Boolean).length);
   });
   var riskScores=[];
   document.getElementById('tb-risk').querySelectorAll('tr').forEach(function(tr){
@@ -3299,7 +3409,16 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         risk:[['Budget overrun','Medium','High'],['Student resistance','Low','Medium'],['Construction disruption','High','High'],['Supplier delay on kiosks','Medium','High'],['Health & safety non-compliance','Low','High']],
         act:[['Confirm budget with principal','Ms. Thompson',true],['Complete student survey','Jordan Kim',true],['Book electrician for kiosk wiring','Priya Patel',true],['Chase kiosk supplier for delivery date','Marcus Lee',false],['Schedule H&S inspection','Jordan Kim',false],['Brief construction crew on noise limits','Priya Patel',false]],
         chg:[['Add outdoor seating area','School Board',false],['Upgrade to 3 kiosks instead of 2','Ms. Thompson',true]],
-        sched:[{stage:'Initiation',weeks:['●','●','','','','','','','','','','']},{stage:'Planning',weeks:['','●','●','●','','','','','','','','']},{stage:'Execution',weeks:['','','','●','●','●','●','','','','','']},{stage:'Closure',weeks:['','','','','','','●','●','●','●','','']}],
+        sched:[
+          {stage:'Explore Idea',weeks:[true,true,false,false,false,false,false,false,false,false,false,false],color:'purple',level:0},
+          {stage:'Plan',weeks:[false,true,true,false,false,false,false,false,false,false,false,false],color:'gold',level:0},
+          {stage:'Create — Design',weeks:[false,false,true,true,false,false,false,false,false,false,false,false],color:'teal',level:1},
+          {stage:'Create — Procurement',weeks:[false,false,false,true,true,false,false,false,false,false,false,false],color:'teal',level:1},
+          {stage:'Create — Construction',weeks:[false,false,false,false,true,true,true,true,false,false,false,false],color:'teal',level:1},
+          {stage:'Create — Fit-Out',weeks:[false,false,false,false,false,false,false,true,true,true,false,false],color:'teal',level:1},
+          {stage:'Handover',weeks:[false,false,false,false,false,false,false,false,false,true,true,false],color:'green',level:0},
+          {stage:'Reports',weeks:[false,false,false,false,false,false,false,false,false,false,true,true],color:'navy',level:0}
+        ],
         substages:[
           {id:'ss-1',name:'Design',done:true,gateChecks:[true,true,true],packages:[
             {id:'wp-1',text:'Create canteen floor plan',done:true},
@@ -3390,7 +3509,15 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         risk:[['Budget overrun','Low','Medium'],['Technical issues','Medium','High']],
         act:[['Order computers','Mr. Davis',false],['Book installation','Emma Chen',false]],
         chg:[],
-        sched:[{stage:'Planning',weeks:['●','●','','','','','','','','','','']},{stage:'Procurement',weeks:['','●','●','●','','','','','','','','']},{stage:'Installation',weeks:['','','','','●','●','','','','','','']},{stage:'Training',weeks:['','','','','','','●','●','','','','']}],
+        sched:[
+          {stage:'Explore Idea',weeks:[true,true,false,false,false,false,false,false,false,false,false,false],color:'purple',level:0},
+          {stage:'Plan',weeks:[false,true,true,true,false,false,false,false,false,false,false,false],color:'gold',level:0},
+          {stage:'Create — Procurement',weeks:[false,false,false,false,true,true,true,false,false,false,false,false],color:'teal',level:1},
+          {stage:'Create — Installation',weeks:[false,false,false,false,false,false,true,true,true,false,false,false],color:'teal',level:1},
+          {stage:'Create — Training',weeks:[false,false,false,false,false,false,false,false,true,true,false,false],color:'teal',level:1},
+          {stage:'Handover',weeks:[false,false,false,false,false,false,false,false,false,true,true,false],color:'green',level:0},
+          {stage:'Reports',weeks:[false,false,false,false,false,false,false,false,false,false,true,true],color:'navy',level:0}
+        ],
         kanban:{todo:[{t:'Research workstation specs',m:'must'},{t:'Get quotes',m:'must'}],create:[{t:'Draft procurement plan',m:'should'}],done1:[{t:'Needs analysis complete',m:'must'}],check:[],done2:[],accepted:[{t:'Project approved by principal',m:'must'}]},
         ideaboard:[
           {text:'Students have no quiet digital space for research',zone:'0',author:'Emma Chen',ts:1779267600000},
