@@ -639,8 +639,8 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 
           <!-- Sub-tabs -->
           <div class="sub-tab-bar">
-            <div class="sub-tab active" id="subtab-ideas" onclick="showSubTab('explore','ideas')">💡 Ideas Board <span class="tab-chip" id="ideas-tab-count" style="background:rgba(0,181,173,.2);color:var(--teal2);margin-left:4px;border-radius:8px;padding:1px 6px;font-size:.62rem;font-weight:700;">0</span></div>
-            <div class="sub-tab" id="subtab-brief" onclick="showSubTab('explore','brief')">📝 Project Brief</div>
+            <div class="sub-tab active" id="subtab-brief" onclick="showSubTab('explore','brief')">📝 Project Brief</div>
+            <div class="sub-tab" id="subtab-ideas" onclick="showSubTab('explore','ideas')">💡 Ideas Board <span class="tab-chip" id="ideas-tab-count" style="background:rgba(0,181,173,.2);color:var(--teal2);margin-left:4px;border-radius:8px;padding:1px 6px;font-size:.62rem;font-weight:700;">0</span></div>
           </div>
 
           <!-- Ideas sub-tab -->
@@ -2006,14 +2006,14 @@ function captureData(){
 // ── TABS ──────────────────────────────────────────────────
 // ── WISP Stage + Sub-tab Navigation ─────────────────────────────────────
 var stageMap = {
-  explore: { subs: ['ideas','brief'],                    default: 'ideas' },
+  explore: { subs: ['brief','ideas'],                    default: 'brief' },
   plan:    { subs: ['input','schedule'],                  default: 'input' },
   create:  { subs: ['substages','progress','risks'],       default: 'substages' },
   handover:{ subs: ['wb'],                               default: 'wb' },
   reports: { subs: ['sec-reports','sec-idea-reports','sec-student-reports'],   default: 'sec-reports' }
 };
 var currentStage = 'explore';
-var currentSubs  = { explore:'ideas', plan:'input', create:'substages', handover:'wb', reports:'sec-reports' };
+var currentSubs  = { explore:'brief', plan:'input', create:'substages', handover:'wb', reports:'sec-reports' };
 
 function showStage(stage){
   currentStage = stage;
