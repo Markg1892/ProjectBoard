@@ -337,10 +337,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ss-empty{text-align:center;padding:40px 20px;color:var(--muted);}
 .ss-empty-icon{font-size:2rem;margin-bottom:8px;}
 /* ── GANTT SCHEDULE ── */
-.sched-label{font-size:.8rem;font-weight:600;color:var(--navy);padding:0 10px;white-space:nowrap;vertical-align:middle;}
+.sched-label{font-size:.8rem;font-weight:600;color:var(--navy);padding:0 10px;white-space:nowrap;vertical-align:middle;min-width:160px;}
 .sched-sub .sched-label{padding-left:22px;color:var(--muted);font-size:.75rem;font-weight:500;}
 .sched-sub{background:#fafcff;}
-.gcell{padding:0;width:44px;min-width:38px;cursor:pointer;height:34px;vertical-align:middle;}
+.gcell{padding:0;width:44px;min-width:36px;cursor:pointer;height:34px;vertical-align:middle;}
 .gcell:hover:not(.gfilled) .gbar{background:rgba(0,181,173,.18);border-radius:5px;margin:12px 5px;}
 .gcell:hover.gfilled .gbar{opacity:.75;}
 .gbar{height:10px;margin:12px 0;background:transparent;transition:background .1s;}
@@ -775,11 +775,11 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
             <div class="panel">
               <div class="panel-t">📅 Project Schedule — Explore → Plan → Create → Handover</div>
               <div style="overflow-x:auto">
-                <table style="min-width:720px">
-                  <thead><tr><th style="min-width:110px">Stage / Work Package</th>
-                    <th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th><th>W6</th>
-                    <th>W7</th><th>W8</th><th>W9</th><th>W10</th><th>W11</th><th>W12</th>
-                    <th style="width:34px"></th>
+                <table style="width:1040px;table-layout:fixed">
+                  <thead><tr><th style="width:220px;text-align:left">Stage / Work Package</th>
+                    <th style="width:62px">W1</th><th style="width:62px">W2</th><th style="width:62px">W3</th><th style="width:62px">W4</th><th style="width:62px">W5</th><th style="width:62px">W6</th>
+                    <th style="width:62px">W7</th><th style="width:62px">W8</th><th style="width:62px">W9</th><th style="width:62px">W10</th><th style="width:62px">W11</th><th style="width:62px">W12</th>
+                    <th style="width:30px"></th>
                   </tr></thead>
                   <tbody id="tb-sched"></tbody>
                 </table>
@@ -2051,6 +2051,12 @@ function showSubTab(stage, sub){
   if(sub==='reports'||sub==='sec-reports'||sub==='sec-idea-reports'||sub==='sec-student-reports') setTimeout(buildReports, 80);
   if(sub==='ideas')   renderIdeaBoard();
   if(sub==='wb')      buildWB();
+  if(sub==='schedule'){
+    // Auto-sync rows from stages if no cells have been filled yet (fresh schedule)
+    var hasData=schedRows.some(function(r){return r.weeks&&r.weeks.some(Boolean);});
+    if(!hasData) schedRows=getDefaultSchedRows();
+    buildScheduleGantt();
+  }
 }
 
 // Legacy shim so old code that calls showTab() still works
@@ -2160,7 +2166,7 @@ function buildScheduleGantt(){
     // Editable label
     var inp=document.createElement('input');
     inp.type='text'; inp.value=row.stage||'';
-    inp.style.cssText='border:none;background:transparent;font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;width:100%;min-width:90px;outline:none;padding:0;';
+    inp.style.cssText='border:none;background:transparent;font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;width:100%;min-width:140px;outline:none;padding:0;';
     inp.onchange=(function(r){return function(){schedRows[r].stage=this.value;saveCurrentProject();};})(ri);
     tdLabel.appendChild(inp);
     tr.appendChild(tdLabel);
