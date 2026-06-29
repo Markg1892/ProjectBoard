@@ -689,6 +689,17 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
               <div class="panel-t">③ What does the Client want to achieve?</div>
               <div class="fgg"><label>Objective</label><textarea id="f-obj" rows="3" placeholder="What does success look like? What must be achieved?"></textarea></div>
             </div>
+            <div class="panel">
+              <div class="panel-t">④ Product Structure</div>
+              <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Define what the client expects, what you will deliver, and the specifications for each deliverable.</div>
+              <div style="overflow-x:auto">
+                <table style="min-width:520px">
+                  <thead><tr><th>Customer Expectation</th><th>End Product</th><th>Specifications</th><th style="width:34px"></th></tr></thead>
+                  <tbody id="tb-prod"></tbody>
+                </table>
+              </div>
+              <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addProd()">+ Add Row</button>
+            </div>
           </div>
 
           <!-- End-of-stage gate -->
@@ -754,11 +765,9 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
                 </div>
               </div>
               <div>
-                <div class="panel">
+                <div class="panel" style="background:#f8fbfb;border-style:dashed">
                   <div class="panel-t">⑥ Product Structure</div>
-                  <table><thead><tr><th>Customer Expectation</th><th>End Product</th><th>Specifications</th><th style="width:34px"></th></tr></thead>
-                  <tbody id="tb-prod"></tbody></table>
-                  <button class="btn btn-o btn-sm" style="margin-top:8px" onclick="addProd()">+ Add Row</button>
+                  <div style="font-size:.8rem;color:var(--muted)">Defined in <strong>Explore Idea → Project Brief</strong> tab.</div>
                 </div>
                 <div class="panel">
                   <div class="panel-t">⑧ Budget by Phase</div>
