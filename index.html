@@ -1223,11 +1223,11 @@ var db = { schools:[], classes:[], users:[], projects:[] };
 
 function genId(){ return '_' + Math.random().toString(36).substr(2,9); }
 
-function save(){ try{ localStorage.setItem('vc_db10', JSON.stringify(db)); }catch(e){} }
+function save(){ try{ localStorage.setItem('vc_db11', JSON.stringify(db)); }catch(e){} }
 function load(){
   try{
-    ['vc_db','vc_db4','vc_db5','vc_db6','vc_db7','vc_db8','vc_db9'].forEach(function(k){ localStorage.removeItem(k); });
-    var raw = localStorage.getItem('vc_db10');
+    ['vc_db','vc_db4','vc_db5','vc_db6','vc_db7','vc_db8','vc_db9','vc_db10'].forEach(function(k){ localStorage.removeItem(k); });
+    var raw = localStorage.getItem('vc_db11');
     if(raw) db = JSON.parse(raw);
   }catch(e){ db = {schools:[],classes:[],users:[],projects:[]}; }
 }
@@ -2135,12 +2135,11 @@ function getDefaultSchedRows(){
   var rows=[];
   rows.push({stage:'Explore Idea',weeks:Array(12).fill(false),color:'purple',level:0});
   rows.push({stage:'Plan',weeks:Array(12).fill(false),color:'gold',level:0});
+  rows.push({stage:'Create',weeks:Array(12).fill(false),color:'teal',level:0});
   if(substages&&substages.length){
     substages.forEach(function(ss){
       rows.push({stage:'Create — '+(ss.name||'Sub-Stage'),weeks:Array(12).fill(false),color:'teal',level:1});
     });
-  } else {
-    rows.push({stage:'Create',weeks:Array(12).fill(false),color:'teal',level:0});
   }
   rows.push({stage:'Handover',weeks:Array(12).fill(false),color:'green',level:0});
   rows.push({stage:'Reports',weeks:Array(12).fill(false),color:'navy',level:0});
@@ -3423,6 +3422,7 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         sched:[
           {stage:'Explore Idea',weeks:[true,true,false,false,false,false,false,false,false,false,false,false],color:'purple',level:0},
           {stage:'Plan',weeks:[false,true,true,false,false,false,false,false,false,false,false,false],color:'gold',level:0},
+          {stage:'Create',weeks:[false,false,true,true,true,true,true,true,true,true,false,false],color:'teal',level:0},
           {stage:'Create — Design',weeks:[false,false,true,true,false,false,false,false,false,false,false,false],color:'teal',level:1},
           {stage:'Create — Procurement',weeks:[false,false,false,true,true,false,false,false,false,false,false,false],color:'teal',level:1},
           {stage:'Create — Construction',weeks:[false,false,false,false,true,true,true,true,false,false,false,false],color:'teal',level:1},
@@ -3523,6 +3523,7 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
         sched:[
           {stage:'Explore Idea',weeks:[true,true,false,false,false,false,false,false,false,false,false,false],color:'purple',level:0},
           {stage:'Plan',weeks:[false,true,true,true,false,false,false,false,false,false,false,false],color:'gold',level:0},
+          {stage:'Create',weeks:[false,false,false,false,true,true,true,true,true,true,false,false],color:'teal',level:0},
           {stage:'Create — Procurement',weeks:[false,false,false,false,true,true,true,false,false,false,false,false],color:'teal',level:1},
           {stage:'Create — Installation',weeks:[false,false,false,false,false,false,true,true,true,false,false,false],color:'teal',level:1},
           {stage:'Create — Training',weeks:[false,false,false,false,false,false,false,false,true,true,false,false],color:'teal',level:1},
