@@ -1223,11 +1223,11 @@ var db = { schools:[], classes:[], users:[], projects:[] };
 
 function genId(){ return '_' + Math.random().toString(36).substr(2,9); }
 
-function save(){ try{ localStorage.setItem('vc_db9', JSON.stringify(db)); }catch(e){} }
+function save(){ try{ localStorage.setItem('vc_db10', JSON.stringify(db)); }catch(e){} }
 function load(){
   try{
-    ['vc_db','vc_db4','vc_db5','vc_db6','vc_db7','vc_db8'].forEach(function(k){ localStorage.removeItem(k); });
-    var raw = localStorage.getItem('vc_db9');
+    ['vc_db','vc_db4','vc_db5','vc_db6','vc_db7','vc_db8','vc_db9'].forEach(function(k){ localStorage.removeItem(k); });
+    var raw = localStorage.getItem('vc_db10');
     if(raw) db = JSON.parse(raw);
   }catch(e){ db = {schools:[],classes:[],users:[],projects:[]}; }
 }
@@ -2148,8 +2148,13 @@ function getDefaultSchedRows(){
 }
 
 function syncSchedFromStages(){
-  if(!confirm('This will replace current rows with rows matching the project stages and sub-stages. Continue?')) return;
-  schedRows=getDefaultSchedRows();
+  var newRows=getDefaultSchedRows();
+  // Preserve week data for any row whose name matches an existing row
+  newRows.forEach(function(nr){
+    var match=schedRows.find(function(or){ return or.stage===nr.stage; });
+    if(match) nr.weeks=match.weeks.slice();
+  });
+  schedRows=newRows;
   buildScheduleGantt(); saveCurrentProject();
 }
 
