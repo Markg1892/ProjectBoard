@@ -465,6 +465,18 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .wb-tbl{font-size:.68rem;}
 }
+/* ── PRINT / PDF ── */
+@media print{
+  #sidebar,header,.breadcrumb,.btn,.sub-tab-bar,#wisp-tab-bar,.stage-gate,.modal,.overlay{display:none !important;}
+  html,body,#app,#app-body,#content-area{height:auto !important;min-height:0 !important;overflow:visible !important;display:block !important;}
+  #app-body{display:block !important;}
+  .screen{display:block !important;padding:12px !important;max-width:100% !important;}
+  .screen:not(.on){display:none !important;}
+  .sec{display:block !important;}
+  .sec:not(.on){display:none !important;}
+  .panel{break-inside:avoid;box-shadow:none !important;}
+  .print-btn{display:none !important;}
+}
 </style>
 </head>
 <body>
@@ -549,6 +561,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-admin">
     <div class="sec-hdr">
       <div><div class="sec-title">🏫 School Administration</div><div class="sec-sub" id="admin-school-name"></div></div>
+      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
     </div>
     <div class="three" style="margin-bottom:20px;">
       <div class="panel" style="cursor:pointer" onclick="showClasses()">
@@ -578,7 +591,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-classes">
     <div class="sec-hdr">
       <div><div class="sec-title">📚 Classes</div></div>
-      <button class="btn btn-t btn-sm" onclick="openModal('modal-class')">＋ New Class</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-t btn-sm" onclick="openModal('modal-class')">＋ New Class</button>
+      </div>
     </div>
     <div class="card-grid" id="class-grid"></div>
   </div>
@@ -588,6 +604,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
     <div class="sec-hdr">
       <div><div class="sec-title" id="class-detail-name">Class</div><div class="sec-sub" id="class-detail-sub"></div></div>
       <div style="display:flex;gap:8px;">
+        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
         <button class="btn btn-o btn-sm" onclick="openAddUserModal('teacher')" id="btn-add-teacher" style="display:none">＋ Add Teacher</button>
         <button class="btn btn-o btn-sm" onclick="openAddUserModal('student')" id="btn-add-student" style="display:none">＋ Add Student</button>
         <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
@@ -613,7 +630,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-users">
     <div class="sec-hdr">
       <div><div class="sec-title">👥 School Users</div></div>
-      <button class="btn btn-t btn-sm" onclick="openModal('modal-user')">＋ Add User</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-t btn-sm" onclick="openModal('modal-user')">＋ Add User</button>
+      </div>
     </div>
     <div class="panel">
       <table>
@@ -627,7 +647,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-all-projects">
     <div class="sec-hdr">
       <div><div class="sec-title">📋 All Projects</div></div>
-      <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
+      </div>
     </div>
     <div class="card-grid" id="all-projects-grid"></div>
   </div>
@@ -636,6 +659,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-teacher">
     <div class="sec-hdr">
       <div><div class="sec-title">👩‍🏫 My Classes & Projects</div></div>
+      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
     </div>
     <div id="teacher-classes-section"></div>
   </div>
@@ -668,6 +692,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
           <div class="sstep-circle"><span>5</span></div>
           <div class="sstep-label">Reports</div>
         </div>
+        <button class="btn btn-o btn-sm print-btn" onclick="window.print()" style="margin-left:auto;flex-shrink:0;">🖨 Print / PDF</button>
       </div>
       <div style="padding:18px 24px;">
 
