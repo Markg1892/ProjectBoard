@@ -491,6 +491,8 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .nb-badge{background:var(--teal);color:#fff;font-size:.6rem;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:4px;}
 
 /* ── PRINT / PDF ── */
+/* watermark — hidden on screen, shown only when printing */
+#print-watermark{display:none;}
 @media print{
   #sidebar,header,.breadcrumb,.btn,.sub-tab-bar,#wisp-tab-bar,.stage-gate,.modal,.overlay{display:none !important;}
   html,body,#app,#app-body,#content-area{height:auto !important;min-height:0 !important;overflow:visible !important;display:block !important;}
@@ -501,6 +503,24 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   .sec:not(.on){display:none !important;}
   .panel{break-inside:avoid;box-shadow:none !important;}
   .print-btn{display:none !important;}
+  #print-watermark{
+    display:block !important;
+    position:fixed;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%) rotate(-40deg);
+    font-size:52pt;
+    font-weight:800;
+    color:rgba(11,31,58,.08);
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:9999;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    font-family:"Plus Jakarta Sans","DM Sans",sans-serif;
+    line-height:1.2;
+    text-align:center;
+    width:100%;
+  }
 }
 </style>
 </head>
@@ -3908,5 +3928,6 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
   document.body.style.visibility='visible';
 })();
 </script>
+<div id="print-watermark">Confidential<br>Student Project Board</div>
 </body>
 </html>
