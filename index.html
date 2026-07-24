@@ -465,6 +465,31 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .wb-tbl{font-size:.68rem;}
 }
+/* ── COMMUNITY: DISCUSSIONS & NOTIFICATIONS ── */
+.disc-post{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px;}
+.disc-post.pinned{border-left:3px solid var(--teal);background:#f0fffe;}
+.disc-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.disc-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.disc-body{font-size:.8rem;line-height:1.65;color:var(--muted);}
+.disc-actions{display:flex;gap:10px;margin-top:8px;}
+.disc-action{font-size:.73rem;color:var(--muted);cursor:pointer;border:none;background:none;font-family:inherit;transition:color .15s;padding:0;}
+.disc-action:hover{color:var(--teal);}
+.disc-replies{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:7px;}
+.disc-reply{display:flex;gap:7px;font-size:.75rem;}
+.disc-reply-body{background:var(--light);border-radius:6px;padding:6px 8px;flex:1;line-height:1.5;}
+.disc-compose{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;}
+.notif-item{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);}
+.notif-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.notif-unread{border-left:3px solid var(--teal);}
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:5px;}
+.comm-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;}
+.comm-tab{padding:8px 18px;font-size:.8rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:all .15s;}
+.comm-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.disc-topic-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.disc-topic-tab{padding:4px 12px;font-size:.73rem;font-weight:600;border-radius:20px;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;transition:all .15s;}
+.disc-topic-tab.active{border-color:var(--teal);color:var(--teal);background:#f0fffe;}
+.nb-badge{background:var(--teal);color:#fff;font-size:.6rem;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:4px;}
+
 /* ── PRINT / PDF ── */
 @media print{
   #sidebar,header,.breadcrumb,.btn,.sub-tab-bar,#wisp-tab-bar,.stage-gate,.modal,.overlay{display:none !important;}
@@ -662,6 +687,33 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
       <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
     </div>
     <div id="teacher-classes-section"></div>
+  </div>
+
+  <!-- ── SCREEN: COMMUNITY ── -->
+  <div class="screen" id="scr-community">
+    <div class="sec-hdr">
+      <div><div class="sec-title">💬 Community</div><div class="sec-sub">Project Management discussions &amp; notifications</div></div>
+      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+    </div>
+    <div class="comm-tabs">
+      <div class="comm-tab active" id="ctab-disc" onclick="switchCommTab('disc')">💬 Discussions <span class="nb-badge" id="disc-badge" style="display:none"></span></div>
+      <div class="comm-tab" id="ctab-notif" onclick="switchCommTab('notif')">🔔 Notifications <span class="nb-badge" id="notif-badge"></span></div>
+    </div>
+    <!-- Discussions panel -->
+    <div id="comm-disc">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="disc-topic-tabs" id="disc-topic-tabs"></div>
+        <button class="btn btn-t btn-sm" onclick="openNewDiscPost()">＋ New Post</button>
+      </div>
+      <div id="disc-content"></div>
+    </div>
+    <!-- Notifications panel -->
+    <div id="comm-notif" style="display:none;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="btn btn-o btn-sm" onclick="markAllNotifsRead()">✓ Mark all read</button>
+      </div>
+      <div class="panel" style="padding:0;overflow:hidden;" id="notif-list"></div>
+    </div>
   </div>
 
   <!-- ── SCREEN: PROJECT EDITOR ── -->
@@ -1456,6 +1508,10 @@ function buildSidebarNav(){
     html += sbItem('Handover',        'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'showStudentView();showStage(\'handover\')');
     html += sbItem('Reports',         'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'showStudentView();showStage(\'reports\')');
   }
+  html += sbSection('Community');
+  var nb = pbNotifUnread > 0 ? ' <span class="nb-badge">'+pbNotifUnread+'</span>' : '';
+  html += sbItem('Discussions'+nb,    'M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-1M1 6a2 2 0 012-2h11a2 2 0 012 2v5a2 2 0 01-2 2H5l-4 4V6z', 'showCommunity(\'disc\')');
+  html += sbItem('Notifications'+nb,  'M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0', 'showCommunity(\'notif\')');
   html += '<div class="sb-item" onclick="doLogout()" style="margin-top:8px">'+sbIcon('M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1')+'Sign Out</div>';
   document.getElementById('sb-nav').innerHTML = html;
 }
@@ -1469,6 +1525,185 @@ function actionBtn(){
   if(sess.role==='admin') openModal('modal-class');
   else if(sess.role==='teacher') openNewProjectModal();
 }
+
+// ── COMMUNITY: DISCUSSIONS & NOTIFICATIONS ──────────────────
+
+var PB_DISC_TOPICS = [
+  { id:'announcements', label:'📢 Announcements' },
+  { id:'questions',     label:'❓ Questions' },
+  { id:'risks',         label:'⚠️ Risks & Issues' },
+  { id:'general',       label:'💬 General' }
+];
+
+var PB_DISCUSSIONS = {
+  announcements: [
+    { id:1, author:'Teacher', initials:'T', color:'#6B66FF', role:'Teacher', time:'Today', pinned:true,
+      text:'⚠️ Reminder: all teams must update their Risk Log before the next gate review (Create → Handover). Teams with an empty risk log cannot advance.', likes:0,
+      replies:[{author:'Emma Chen', initials:'EC', color:'#00B5AD', text:'Updated ours — added the supplier delay risk with a mitigation plan.'}] },
+    { id:2, author:'Teacher', initials:'T', color:'#6B66FF', role:'Teacher', time:'Yesterday', pinned:false,
+      text:'📅 Gate review sessions scheduled for next week. Make sure your Project Brief and Sub-Stage progress board are complete before your slot.', likes:2, replies:[] }
+  ],
+  questions: [
+    { id:1, author:'Liam Patel', initials:'LP', color:'#F0A500', role:'Student', time:'2 hours ago', pinned:false,
+      text:'Does anyone have tips for estimating the budget in the Plan stage? Our materials cost keeps coming in over budget.', likes:3,
+      replies:[{author:'Teacher', initials:'T', color:'#6B66FF', text:'Always build in a 10–15% contingency for unexpected costs. Also cross-check against similar past projects if you have access to them.'}] },
+    { id:2, author:'Sofia Rodriguez', initials:'SR', color:'#38A169', role:'Student', time:'Yesterday', pinned:false,
+      text:'What\'s the difference between a risk and an issue on the Risk Log? When does a risk become an issue?', likes:5,
+      replies:[{author:'Teacher', initials:'T', color:'#6B66FF', text:'A risk is a potential problem that hasn\'t happened yet — you manage it proactively. An issue is a risk that has already occurred and needs an immediate response. Move it from Risk to Issue on your log when it materialises.'}] }
+  ],
+  risks: [
+    { id:1, author:'Jordan Kim', initials:'JK', color:'#E53E3E', role:'Student', time:'3 hours ago', pinned:false,
+      text:'Our supplier confirmed a 2-week delay on materials. We\'ve logged this as an issue on the Risk Log and updated the Gantt schedule. Teacher — do we need a formal change request?', likes:1,
+      replies:[{author:'Teacher', initials:'T', color:'#6B66FF', text:'Yes — raise a change request in the Create stage Risks & Actions tab. Document the impact on your timeline and get it approved before the next gate.'}] },
+    { id:2, author:'Priya Patel', initials:'PP', color:'#0B1F3A', role:'Student', time:'2 days ago', pinned:false,
+      text:'We flagged a budget risk but our mitigation plan got approved — sharing in case other teams find it useful: we substituted one material for a cheaper alternative with the same spec.', likes:7, replies:[] }
+  ],
+  general: [
+    { id:1, author:'Taylor Smith', initials:'TS', color:'#6B66FF', role:'Student', time:'Today', pinned:false,
+      text:'Anyone want to do a quick peer review of our Project Brief before the gate? Happy to swap feedback 🙌', likes:4,
+      replies:[{author:'Emma Chen', initials:'EC', color:'#00B5AD', text:'Yes! DM me — we can swap briefs this afternoon.'}] },
+    { id:2, author:'Teacher', initials:'T', color:'#6B66FF', role:'Teacher', time:'3 days ago', pinned:false,
+      text:'Great energy from all teams this week. The Explore Idea boards are looking strong — keep that momentum going into Plan.', likes:12, replies:[] }
+  ]
+};
+
+var pbUserPosts = JSON.parse(localStorage.getItem('pb_disc') || '[]');
+var pbCurrentTopic = 'announcements';
+var pbNotifUnread = 3;
+
+var PB_NOTIFICATIONS = [
+  { icon:'✅', bg:'#e6faf9', unread:true,  title:'Gate passed — Create stage unlocked',    body:'Your team completed the Plan gate. Create stage is now active.',          time:'1 hour ago',   fn:"showStudentView();showStage('create')" },
+  { icon:'📌', bg:'#f0f0ff', unread:true,  title:'Teacher pinned a new announcement',      body:'Check the Announcements tab — Risk Log update required before gate review.', time:'2 hours ago',  fn:"showCommunity('disc')" },
+  { icon:'💬', bg:'#fff8e6', unread:true,  title:'Your question got a reply',               body:'Teacher replied to "Budget estimation tips" in the Questions discussion.',   time:'3 hours ago',  fn:"showCommunity('disc')" },
+  { icon:'⚠️', bg:'#fff0f0', unread:false, title:'Risk escalated to Issue',                body:'Supplier delay risk has been moved to Issue status on your Risk Log.',       time:'Yesterday',    fn:"showStudentView();showStage('create')" },
+  { icon:'📋', bg:'#e6faf9', unread:false, title:'Sub-stage marked complete',              body:'Sub-stage "Design" was marked complete. Progress board updated.',            time:'2 days ago',   fn:"showStudentView();showStage('create')" },
+  { icon:'🎓', bg:'#f0f0ff', unread:false, title:'Project Brief approved',                 body:'Your teacher approved the Project Brief. You can now move to the Plan stage.', time:'3 days ago', fn:"showStudentView();showStage('plan')" }
+];
+
+var currentCommTab = 'disc';
+
+function showCommunity(tab) {
+  showScreen('scr-community');
+  switchCommTab(tab || 'disc');
+}
+
+function switchCommTab(tab) {
+  currentCommTab = tab;
+  document.getElementById('ctab-disc').classList.toggle('active', tab==='disc');
+  document.getElementById('ctab-notif').classList.toggle('active', tab==='notif');
+  document.getElementById('comm-disc').style.display  = tab==='disc'   ? '' : 'none';
+  document.getElementById('comm-notif').style.display = tab==='notif'  ? '' : 'none';
+  if(tab==='disc')   renderDiscussions();
+  if(tab==='notif')  renderPBNotifications();
+}
+
+function renderDiscTopicTabs() {
+  var el = document.getElementById('disc-topic-tabs');
+  if(!el) return;
+  el.innerHTML = PB_DISC_TOPICS.map(function(t){
+    return '<div class="disc-topic-tab'+(t.id===pbCurrentTopic?' active':'')+'" onclick="switchDiscTopic(\''+t.id+'\')">'+t.label+'</div>';
+  }).join('');
+}
+
+function switchDiscTopic(id) {
+  pbCurrentTopic = id;
+  renderDiscTopicTabs();
+  renderDiscussions();
+}
+
+function renderDiscussions() {
+  renderDiscTopicTabs();
+  var el = document.getElementById('disc-content');
+  if(!el) return;
+  var posts = (PB_DISCUSSIONS[pbCurrentTopic] || []).concat(
+    pbUserPosts.filter(function(p){ return p.topic===pbCurrentTopic; })
+  );
+  var initials = sess.name ? sess.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() : 'ME';
+  var avatarColor = sess.role==='teacher' ? '#00B5AD' : sess.role==='admin' ? '#F0A500' : '#6B66FF';
+  var html = posts.map(function(p){
+    var roleStyle = p.role==='Teacher' ? 'background:#f0f0ff;color:#6B66FF' : 'background:var(--light);color:var(--muted);border:1px solid var(--border)';
+    var replies = (p.replies||[]).map(function(r){
+      return '<div class="disc-reply"><div class="disc-av" style="background:'+r.color+';width:22px;height:22px;font-size:8px">'+r.initials+'</div>'
+        +'<div class="disc-reply-body"><div style="font-weight:600;font-size:.7rem;margin-bottom:2px">'+r.author+'</div>'+r.text+'</div></div>';
+    }).join('');
+    return '<div class="disc-post'+(p.pinned?' pinned':'')+'">'
+      +(p.pinned?'<div style="font-size:.7rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">📌 Pinned by teacher</div>':'')
+      +'<div class="disc-meta"><div class="disc-av" style="background:'+p.color+'">'+p.initials+'</div>'
+      +'<div style="flex:1"><div style="font-size:.8rem;font-weight:600">'+p.author+' <span style="font-size:.65rem;font-weight:600;padding:1px 7px;border-radius:8px;'+roleStyle+'">'+p.role+'</span></div>'
+      +'<div style="font-size:.7rem;color:var(--muted)">'+p.time+'</div></div></div>'
+      +'<div class="disc-body">'+p.text+'</div>'
+      +'<div class="disc-actions"><button class="disc-action" onclick="pbDiscLike(this)">👍 '+(p.likes||0)+' likes</button><button class="disc-action">💬 Reply</button></div>'
+      +(replies?'<div class="disc-replies">'+replies+'</div>':'')
+      +'</div>';
+  }).join('');
+  html += '<div class="disc-compose">'
+    +'<div style="font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:8px">Add to the discussion</div>'
+    +'<div style="display:flex;gap:8px;align-items:flex-start">'
+    +'<div class="disc-av" style="background:'+avatarColor+'">'+initials+'</div>'
+    +'<textarea id="disc-input" rows="2" placeholder="Share an insight, ask a question, or help your team…" style="flex:1;border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:.8rem;font-family:inherit;resize:none;outline:none;"></textarea>'
+    +'</div><div style="display:flex;justify-content:flex-end;margin-top:8px">'
+    +'<button class="btn btn-t btn-sm" onclick="postPBDisc()">Post</button></div></div>';
+  el.innerHTML = html;
+}
+
+function pbDiscLike(btn) {
+  var parts = btn.textContent.split(' ');
+  var n = (parseInt(parts[1])||0) + 1;
+  btn.textContent = '👍 '+n+' likes';
+}
+
+function postPBDisc() {
+  var input = document.getElementById('disc-input');
+  if(!input || !input.value.trim()) return;
+  var initials = sess.name ? sess.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() : 'ME';
+  pbUserPosts.push({ id:Date.now(), topic:pbCurrentTopic, author:sess.name||'Me', initials:initials,
+    color: sess.role==='teacher'?'#00B5AD':sess.role==='admin'?'#F0A500':'#6B66FF',
+    role: sess.role==='teacher'?'Teacher':sess.role==='admin'?'Admin':'Student',
+    time:'Just now', text:input.value.trim(), likes:0, replies:[] });
+  localStorage.setItem('pb_disc', JSON.stringify(pbUserPosts));
+  input.value = '';
+  renderDiscussions();
+}
+
+function openNewDiscPost() {
+  var input = document.getElementById('disc-input');
+  if(input) { input.focus(); input.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
+function renderPBNotifications() {
+  var el = document.getElementById('notif-list');
+  if(!el) return;
+  pbNotifUnread = PB_NOTIFICATIONS.filter(function(n){return n.unread;}).length;
+  var badge = document.getElementById('notif-badge');
+  if(badge) { badge.textContent=pbNotifUnread||''; badge.style.display=pbNotifUnread?'':'none'; }
+  el.innerHTML = PB_NOTIFICATIONS.map(function(n){
+    return '<div class="notif-item'+(n.unread?' notif-unread':'')+'" onclick="'+n.fn+';markNotifRead(this)" style="cursor:pointer">'
+      +(n.unread?'<div class="notif-dot"></div>':'<div style="width:6px"></div>')
+      +'<div class="notif-icon" style="background:'+n.bg+'">'+n.icon+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:.8rem;font-weight:600;color:var(--navy)">'+n.title+'</div>'
+      +'<div style="font-size:.75rem;color:var(--muted);margin-top:2px;line-height:1.5">'+n.body+'</div>'
+      +'<div style="font-size:.7rem;color:var(--muted);margin-top:3px">'+n.time+' · <span style="color:var(--teal)">View →</span></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function markNotifRead(el) {
+  var idx = Array.from(document.querySelectorAll('#notif-list .notif-item')).indexOf(el);
+  if(PB_NOTIFICATIONS[idx]) PB_NOTIFICATIONS[idx].unread = false;
+  pbNotifUnread = PB_NOTIFICATIONS.filter(function(n){return n.unread;}).length;
+  buildSidebarNav();
+  renderPBNotifications();
+}
+
+function markAllNotifsRead() {
+  PB_NOTIFICATIONS.forEach(function(n){n.unread=false;});
+  pbNotifUnread = 0;
+  buildSidebarNav();
+  renderPBNotifications();
+}
+
+// ── END COMMUNITY ────────────────────────────────────────────
 
 function doLogout(){
   saveCurrentProject();
