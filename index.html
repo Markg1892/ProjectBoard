@@ -493,20 +493,18 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 /* ── PRINT / PDF ── */
 /* watermark — hidden on screen, shown only when printing */
 #print-watermark{display:none;}
+#print-root{display:none;}
 @media print{
-  #sidebar,header,.breadcrumb,.btn,.sub-tab-bar,#wisp-tab-bar,.stage-gate,.modal,.overlay{display:none !important;}
-  html,body,#app,#app-body,#content-area{height:auto !important;min-height:0 !important;overflow:visible !important;display:block !important;}
-  #app-body{display:block !important;}
-  .screen{display:block !important;padding:12px !important;max-width:100% !important;}
-  .screen:not(.on){display:none !important;}
-  .sec{display:block !important;}
-  .sec:not(.on){display:none !important;}
-  .stage-panel{display:block !important;}
-  .stage-panel:not(.on){display:none !important;}
-  .sub-tab-content{display:block !important;}
-  .sub-tab-content:not(.on){display:none !important;}
-  .panel{break-inside:avoid;box-shadow:none !important;}
-  .print-btn{display:none !important;}
+  #login-screen,#app{display:none !important;}
+  #print-root{display:block !important;padding:20px;}
+  #print-root .screen{display:block !important;padding:0 !important;max-width:100% !important;}
+  #print-root .sub-tab-bar,#print-root #wisp-tab-bar,#print-root .stage-gate,
+  #print-root .btn,#print-root .print-btn,#print-root .modal,#print-root .overlay{display:none !important;}
+  #print-root .stage-panel{display:block !important;}
+  #print-root .stage-panel:not(.on){display:none !important;}
+  #print-root .sec{display:block !important;}
+  #print-root .sec:not(.on){display:none !important;}
+  #print-root .panel{break-inside:avoid;box-shadow:none !important;}
   #print-watermark{
     display:block !important;
     position:fixed;
@@ -610,7 +608,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-admin">
     <div class="sec-hdr">
       <div><div class="sec-title">🏫 School Administration</div><div class="sec-sub" id="admin-school-name"></div></div>
-      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+      <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
     </div>
     <div class="three" style="margin-bottom:20px;">
       <div class="panel" style="cursor:pointer" onclick="showClasses()">
@@ -641,7 +639,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
     <div class="sec-hdr">
       <div><div class="sec-title">📚 Classes</div></div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
         <button class="btn btn-t btn-sm" onclick="openModal('modal-class')">＋ New Class</button>
       </div>
     </div>
@@ -653,7 +651,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
     <div class="sec-hdr">
       <div><div class="sec-title" id="class-detail-name">Class</div><div class="sec-sub" id="class-detail-sub"></div></div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
         <button class="btn btn-o btn-sm" onclick="openAddUserModal('teacher')" id="btn-add-teacher" style="display:none">＋ Add Teacher</button>
         <button class="btn btn-o btn-sm" onclick="openAddUserModal('student')" id="btn-add-student" style="display:none">＋ Add Student</button>
         <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
@@ -680,7 +678,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
     <div class="sec-hdr">
       <div><div class="sec-title">👥 School Users</div></div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
         <button class="btn btn-t btn-sm" onclick="openModal('modal-user')">＋ Add User</button>
       </div>
     </div>
@@ -697,7 +695,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
     <div class="sec-hdr">
       <div><div class="sec-title">📋 All Projects</div></div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
         <button class="btn btn-t btn-sm" onclick="openNewProjectModal()">＋ New Project</button>
       </div>
     </div>
@@ -708,7 +706,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-teacher">
     <div class="sec-hdr">
       <div><div class="sec-title">👩‍🏫 My Classes & Projects</div></div>
-      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+      <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
     </div>
     <div id="teacher-classes-section"></div>
   </div>
@@ -717,7 +715,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
   <div class="screen" id="scr-community">
     <div class="sec-hdr">
       <div><div class="sec-title">💬 Community</div><div class="sec-sub">Project Management discussions &amp; notifications</div></div>
-      <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+      <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
     </div>
     <div class="comm-tabs">
       <div class="comm-tab active" id="ctab-disc" onclick="switchCommTab('disc')">💬 Discussions <span class="nb-badge" id="disc-badge" style="display:none"></span></div>
@@ -770,7 +768,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;padding:8px 24px 0;background:#fff;border-bottom:1px solid var(--border);">
-        <button class="btn btn-o btn-sm print-btn" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
       </div>
       <div style="padding:18px 24px;">
 
@@ -1076,7 +1074,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
               <span style="font-family:Syne,sans-serif;font-weight:700;font-size:.95rem;">🖥 Live Whiteboard</span>
               <div style="display:flex;gap:8px;">
                 <button class="btn btn-o btn-sm" onclick="buildWB()">🔄 Refresh</button>
-                <button class="btn btn-t btn-sm" onclick="window.print()">🖨 Print / PDF</button>
+                <button class="btn btn-t btn-sm" onclick="printPage()">🖨 Print / PDF</button>
               </div>
             </div>
             <div id="wb-out"></div>
@@ -3935,24 +3933,17 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 })();
 </script>
 <script>
-window.addEventListener('beforeprint', function() {
-  var app = document.getElementById('app');
-  var appBody = document.getElementById('app-body');
-  var contentArea = document.getElementById('content-area');
-  if (app) app.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
-  if (appBody) appBody.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
-  if (contentArea) contentArea.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
-});
-window.addEventListener('afterprint', function() {
-  var app = document.getElementById('app');
-  var appBody = document.getElementById('app-body');
-  var contentArea = document.getElementById('content-area');
-  if (app) app.style.cssText = '';
-  if (appBody) appBody.style.cssText = '';
-  if (contentArea) contentArea.style.cssText = '';
-  if (app) app.style.display = 'flex';
-});
+function printPage() {
+  var screen = document.querySelector('.screen.on');
+  if (!screen) return;
+  var pr = document.getElementById('print-root');
+  pr.innerHTML = '';
+  pr.appendChild(screen.cloneNode(true));
+  window.print();
+  setTimeout(function(){ pr.innerHTML = ''; }, 500);
+}
 </script>
 <div id="print-watermark">Confidential<br>Student Project Board</div>
+<div id="print-root"></div>
 </body>
 </html>
