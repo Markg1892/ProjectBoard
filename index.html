@@ -3934,6 +3934,25 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
   document.body.style.visibility='visible';
 })();
 </script>
+<script>
+window.addEventListener('beforeprint', function() {
+  var app = document.getElementById('app');
+  var appBody = document.getElementById('app-body');
+  var contentArea = document.getElementById('content-area');
+  if (app) app.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
+  if (appBody) appBody.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
+  if (contentArea) contentArea.style.cssText = 'display:block !important;height:auto !important;overflow:visible !important;min-height:0 !important;';
+});
+window.addEventListener('afterprint', function() {
+  var app = document.getElementById('app');
+  var appBody = document.getElementById('app-body');
+  var contentArea = document.getElementById('content-area');
+  if (app) app.style.cssText = '';
+  if (appBody) appBody.style.cssText = '';
+  if (contentArea) contentArea.style.cssText = '';
+  if (app) app.style.display = 'flex';
+});
+</script>
 <div id="print-watermark">Confidential<br>Student Project Board</div>
 </body>
 </html>
