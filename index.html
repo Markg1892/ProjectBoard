@@ -3944,12 +3944,25 @@ function printPage() {
 
   if (screen) {
     screen.querySelectorAll('canvas').forEach(function(canvas) {
+      // Only snapshot canvases inside an active (.sec.on) container.
+      // canvas.width/height are DOM attributes set by Chart.js and do NOT
+      // reset when the parent sec is hidden — so we must check visibility
+      // explicitly to avoid snapshotting stale charts from inactive sub-tabs.
+      var el = canvas.parentElement;
+      var inActiveSec = false;
+      while (el && el !== screen) {
+        if (el.classList.contains('sec')) {
+          inActiveSec = el.classList.contains('on');
+          break;
+        }
+        el = el.parentElement;
+      }
+      if (!inActiveSec) return;
       if (canvas.width > 0 && canvas.height > 0) {
         var img = document.createElement('img');
         try { img.src = canvas.toDataURL('image/png'); } catch(e) { return; }
         img.setAttribute('data-ps', '1');
         img.style.cssText = 'width:100%;height:auto;display:block;max-width:100%;';
-        // Replace canvas with img entirely — no chance of both showing in print
         canvas.parentNode.replaceChild(img, canvas);
         swaps.push({canvas: canvas, img: img});
       }
