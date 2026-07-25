@@ -3935,12 +3935,9 @@ function printPage() {
   var screen = document.querySelector('.screen.on');
 
   // Clean up any leftover state from a previous interrupted print
+  // (img[data-ps] replaced the canvas; the swap object still holds the canvas ref)
   document.querySelectorAll('img[data-ps]').forEach(function(img) {
     if (img.parentNode) img.parentNode.removeChild(img);
-  });
-  document.querySelectorAll('canvas[data-ph]').forEach(function(c) {
-    c.style.display = '';
-    c.removeAttribute('data-ph');
   });
 
   var swaps = [];
@@ -3952,9 +3949,8 @@ function printPage() {
         try { img.src = canvas.toDataURL('image/png'); } catch(e) { return; }
         img.setAttribute('data-ps', '1');
         img.style.cssText = 'width:100%;height:auto;display:block;max-width:100%;';
-        canvas.setAttribute('data-ph', '1');
-        canvas.style.display = 'none';
-        canvas.parentNode.insertBefore(img, canvas);
+        // Replace canvas with img entirely — no chance of both showing in print
+        canvas.parentNode.replaceChild(img, canvas);
         swaps.push({canvas: canvas, img: img});
       }
     });
@@ -3967,9 +3963,7 @@ function printPage() {
       window.print();
       window.addEventListener('afterprint', function cleanup() {
         swaps.forEach(function(s) {
-          s.canvas.style.display = '';
-          s.canvas.removeAttribute('data-ph');
-          if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
+          if (s.img.parentNode) s.img.parentNode.replaceChild(s.canvas, s.img);
         });
         window.removeEventListener('afterprint', cleanup);
       });
