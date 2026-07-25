@@ -3931,59 +3931,36 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 })();
 </script>
 <script>
-// Canvases that were swapped to <img> for printing — restored in afterprint
-var _printCanvasSwaps = [];
-
-window.addEventListener('beforeprint', function() {
-  var screen = document.querySelector('.screen.on');
-  if (!screen) return;
-
-  // Fix the flex-height cage with inline styles (beats any stylesheet rule)
-  var app = document.getElementById('app');
-  var appBody = document.getElementById('app-body');
-  var ca = document.getElementById('content-area');
-  app._ps = app.style.cssText;
-  appBody._ps = appBody.style.cssText;
-  ca._ps = ca.style.cssText;
-  app.style.cssText = 'display:block;height:auto;overflow:visible;';
-  appBody.style.cssText = 'display:block;height:auto;overflow:visible;';
-  ca.style.cssText = 'display:block;height:auto;overflow:visible;';
-
-  // Swap every visible canvas → <img> in place so the PDF captures them
-  // Charts are already rendered on screen — no need to re-invoke buildReports()
-  // (doing so would throw "Canvas is already in use" from Chart.js)
-  _printCanvasSwaps = [];
-  screen.querySelectorAll('canvas').forEach(function(canvas) {
-    if (canvas.width > 0 && canvas.height > 0) {
-      var img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
-      img.style.cssText = 'width:100%;height:auto;display:block;';
-      canvas.parentNode.insertBefore(img, canvas);
-      canvas.style.display = 'none';
-      _printCanvasSwaps.push({canvas: canvas, img: img});
-    }
-  });
-});
-
-window.addEventListener('afterprint', function() {
-  // Restore canvases
-  _printCanvasSwaps.forEach(function(s) {
-    s.canvas.style.display = '';
-    if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
-  });
-  _printCanvasSwaps = [];
-
-  // Restore layout
-  var app = document.getElementById('app');
-  var appBody = document.getElementById('app-body');
-  var ca = document.getElementById('content-area');
-  if (app) { app.style.cssText = app._ps || ''; app.style.display = 'flex'; }
-  if (appBody) appBody.style.cssText = appBody._ps || '';
-  if (ca) ca.style.cssText = ca._ps || '';
-});
-
 function printPage() {
+  var screen = document.querySelector('.screen.on');
+  var swaps = [];
+
+  // Snapshot every visible canvas → <img> BEFORE window.print() is called.
+  // Chrome snapshots canvases for the print layout before beforeprint fires,
+  // so swapping here (synchronously, pre-print) is the only reliable approach.
+  if (screen) {
+    screen.querySelectorAll('canvas').forEach(function(canvas) {
+      if (canvas.width > 0 && canvas.height > 0) {
+        var img = document.createElement('img');
+        try { img.src = canvas.toDataURL('image/png'); } catch(e) { return; }
+        img.style.cssText = 'width:100%;height:auto;display:block;max-width:100%;';
+        canvas.parentNode.insertBefore(img, canvas);
+        canvas.style.display = 'none';
+        swaps.push({canvas: canvas, img: img});
+      }
+    });
+  }
+
   window.print();
+
+  // Restore canvases after the print dialog closes
+  window.addEventListener('afterprint', function cleanup() {
+    swaps.forEach(function(s) {
+      s.canvas.style.display = '';
+      if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
+    });
+    window.removeEventListener('afterprint', cleanup);
+  });
 }
 </script>
 <div id="print-watermark">Confidential<br>Student Project Board</div></body>
