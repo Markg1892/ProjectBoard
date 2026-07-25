@@ -3949,15 +3949,9 @@ window.addEventListener('beforeprint', function() {
   appBody.style.cssText = 'display:block;height:auto;overflow:visible;';
   ca.style.cssText = 'display:block;height:auto;overflow:visible;';
 
-  // Force synchronous chart render so canvases have pixel data
-  if (screen.querySelector('#stage-reports.on') && typeof buildReports === 'function') {
-    var origAnim = Chart.defaults.animation;
-    Chart.defaults.animation = false;
-    buildReports();
-    Chart.defaults.animation = origAnim;
-  }
-
   // Swap every visible canvas → <img> in place so the PDF captures them
+  // Charts are already rendered on screen — no need to re-invoke buildReports()
+  // (doing so would throw "Canvas is already in use" from Chart.js)
   _printCanvasSwaps = [];
   screen.querySelectorAll('canvas').forEach(function(canvas) {
     if (canvas.width > 0 && canvas.height > 0) {
