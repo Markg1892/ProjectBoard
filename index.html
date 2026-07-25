@@ -3939,7 +3939,19 @@ function printPage() {
   if (!screen) return;
   var pr = document.getElementById('print-root');
   pr.innerHTML = '';
-  pr.appendChild(screen.cloneNode(true));
+  var clone = screen.cloneNode(true);
+  // Snapshot canvas charts → img so they appear in print
+  var canvases = screen.querySelectorAll('canvas');
+  var cloneCanvases = clone.querySelectorAll('canvas');
+  canvases.forEach(function(canvas, i) {
+    if (canvas.width > 0 && canvas.height > 0) {
+      var img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.cssText = 'width:100%;height:auto;display:block;';
+      cloneCanvases[i].parentNode.replaceChild(img, cloneCanvases[i]);
+    }
+  });
+  pr.appendChild(clone);
   window.print();
   setTimeout(function(){ pr.innerHTML = ''; }, 500);
 }
