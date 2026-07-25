@@ -3937,16 +3937,22 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 function printPage() {
   var screen = document.querySelector('.screen.on');
   if (!screen) return;
-  var pr = document.getElementById('print-root');
-  pr.innerHTML = '';
 
-  // For any screen with sub-tabs (.sec), clone only the active sec so we
-  // never try to snapshot canvases in hidden (0x0) elements
+  // For the reports stage: force a synchronous re-render so all canvases
+  // in the active sec have pixel data regardless of animation timing
+  if (screen.querySelector('#stage-reports.on') && typeof buildReports === 'function') {
+    var origAnim = Chart.defaults.animation;
+    Chart.defaults.animation = false;
+    buildReports();
+    Chart.defaults.animation = origAnim;
+  }
+
+  // Clone only the active sec — its canvases are now guaranteed rendered
   var activeSec = screen.querySelector('.stage-panel.on .sec.on') || screen.querySelector('.sec.on');
   var source = activeSec || screen;
-
   var clone = source.cloneNode(true);
-  // Snapshot canvas charts → img
+
+  // Snapshot every canvas → img so charts appear in PDF
   source.querySelectorAll('canvas').forEach(function(canvas, i) {
     var cloneCanvas = clone.querySelectorAll('canvas')[i];
     if (canvas.width > 0 && canvas.height > 0 && cloneCanvas) {
@@ -3957,7 +3963,8 @@ function printPage() {
     }
   });
 
-  // Wrap in a screen div so existing print CSS applies
+  var pr = document.getElementById('print-root');
+  pr.innerHTML = '';
   var wrapper = document.createElement('div');
   wrapper.className = 'screen on';
   wrapper.appendChild(clone);
