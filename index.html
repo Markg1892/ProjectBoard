@@ -1103,6 +1103,14 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
         ═══════════════════════════════════════ -->
         <div class="stage-panel" id="stage-reports">
 
+          <!-- Project selector — shown for admin/teacher when entering via Reports nav -->
+          <div id="reports-proj-row" style="display:none;margin-bottom:18px;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Project</span>
+              <select id="reports-proj-sel" onchange="switchReportsProject(this.value)" style="flex:1;min-width:200px;max-width:420px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--navy);background:#fff;cursor:pointer;font-family:inherit;"></select>
+            </div>
+          </div>
+
           <div class="sub-tab-bar">
             <div class="sub-tab active" id="subtab-proj-reports" onclick="showSubTab('reports','sec-reports')">📊 Project Reports</div>
             <div class="sub-tab" id="subtab-idea-reports" onclick="showSubTab('reports','sec-idea-reports')">💡 IdeaBoard Analytics</div>
@@ -1516,11 +1524,13 @@ function buildSidebarNav(){
     html += sbItem('Dashboard',       'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', 'showAdminDashboard()');
     html += sbItem('Classes',         'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'showClasses()');
     html += sbItem('All Projects',    'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'showAllProjects()');
+    html += sbItem('Reports',         'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'showReportsNav()');
     html += sbItem('Users',           'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'showUsers()');
   } else if(sess.role==='teacher'){
     html += sbSection('Teaching');
     html += sbItem('My Classes',      'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'showTeacherDashboard()');
     html += sbItem('All Projects',    'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'showAllProjects()');
+    html += sbItem('Reports',         'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', 'showReportsNav()');
   } else {
     html += sbSection('My Project');
     html += sbItem('Project Board',   'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'showStudentView()');
@@ -2251,6 +2261,33 @@ function openProject(id){
   buildWB();
 }
 
+function showReportsNav() {
+  var projects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
+  if (!projects.length) return;
+  var targetId = (currentProjectId && projects.find(function(p){ return p.id===currentProjectId; }))
+    ? currentProjectId : projects[0].id;
+  openProject(targetId);
+  showStage('reports');
+  _populateReportsSel(projects, targetId);
+}
+
+function switchReportsProject(id) {
+  openProject(id);
+  showStage('reports');
+  var projects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
+  _populateReportsSel(projects, id);
+}
+
+function _populateReportsSel(projects, selectedId) {
+  var row = document.getElementById('reports-proj-row');
+  var sel = document.getElementById('reports-proj-sel');
+  if (!row || !sel) return;
+  row.style.display = 'block';
+  sel.innerHTML = projects.map(function(p){
+    return '<option value="'+p.id+'"'+(p.id===selectedId?' selected':'')+'>'+p.name+'</option>';
+  }).join('');
+}
+
 function loadProjectData(p, readOnly){
   ['tb-prod','tb-bud','tb-risk','tb-act','tb-chg','tb-sched'].forEach(function(id){ document.getElementById(id).innerHTML=''; });
   ['todo','create','done1','check','done2','accepted'].forEach(function(col){ document.getElementById('kc-'+col).innerHTML=''; });
@@ -2387,6 +2424,11 @@ var currentSubs  = { explore:'brief', plan:'input', create:'substages', handover
 
 function showStage(stage){
   currentStage = stage;
+  // Hide the reports project selector when leaving the reports stage
+  if (stage !== 'reports') {
+    var rpr = document.getElementById('reports-proj-row');
+    if (rpr) rpr.style.display = 'none';
+  }
   var order = ['explore','plan','create','handover','reports'];
   var idx = order.indexOf(stage);
   // Stage steps
