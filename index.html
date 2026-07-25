@@ -740,6 +740,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 
   <!-- ── SCREEN: PROJECT EDITOR ── -->
   <div class="screen" id="scr-project">
+    <div class="sec-hdr" style="padding:0 0 14px 0;">
+      <div><div class="sec-title" id="proj-screen-title">Project</div><div class="sec-sub">Student Project Board</div></div>
+      <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
+    </div>
     <div id="project-editor-wrap">
       <div id="wisp-tab-bar">
         <div class="sstep active" id="stab-explore" onclick="showStage('explore')">
@@ -767,9 +771,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
           <div class="sstep-label">Reports</div>
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;padding:8px 24px 0;background:#fff;border-bottom:1px solid var(--border);">
-        <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
-      </div>
+
       <div style="padding:18px 24px;">
 
         <!-- ═══════════════════════════════════════
@@ -2262,6 +2264,7 @@ function loadProjectData(p, readOnly){
 
   var d=p.data||blankData();
   var set=function(id,v){ var el=document.getElementById(id); if(el) el.value=v||''; };
+  var pst = document.getElementById('proj-screen-title'); if(pst) pst.textContent = p.name||'Project';
   set('f-name', p.name); set('f-cust', p.client);
   set('f-exec',d.exec); set('f-pm',d.pm); set('f-supp',d.supp);
   set('f-tl1',d.tl1);   set('f-tl2',d.tl2);
