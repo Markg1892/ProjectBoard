@@ -2245,13 +2245,11 @@ function openProject(id){
     bc.push({label:'My Classes',fn:'showTeacherDashboard'});
     if(cls) bc.push({label:cls.name,fn:'function(){showClassDetail(\''+cls.id+'\')'});
     bc.push({label:p.name});
-  } else {
-    bc.push({label:p.name});
   }
 
   var readOnly = sess.role==='student';
   loadProjectData(p, readOnly);
-  showScreen('scr-project', bc);
+  showScreen('scr-project', sess.role==='student' ? [] : bc);
   showStage('explore');
   buildWB();
 }
