@@ -493,35 +493,32 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 /* ── PRINT / PDF ── */
 /* watermark — hidden on screen, shown only when printing */
 #print-watermark{display:none;}
-#print-root{display:none;}
 @media print{
-  #login-screen,#app{display:none !important;}
-  #print-root{display:block !important;padding:20px;}
-  #print-root .screen{display:block !important;padding:0 !important;max-width:100% !important;}
-  #print-root .sub-tab-bar,#print-root #wisp-tab-bar,#print-root .stage-gate,
-  #print-root .btn,#print-root .print-btn,#print-root .modal,#print-root .overlay{display:none !important;}
-  #print-root .stage-panel{display:block !important;}
-  #print-root .stage-panel:not(.on){display:none !important;}
-  #print-root .sec{display:block !important;}
-  #print-root .sec:not(.on){display:none !important;}
-  #print-root .panel{break-inside:avoid;box-shadow:none !important;}
+  /* Hide chrome — sidebar, header, buttons, nav */
+  #sidebar,header,.breadcrumb,.print-btn,.btn,.sub-tab-bar,
+  #wisp-tab-bar,.stage-gate,.modal,.overlay{display:none !important;}
+  /* Bust the flex-height cage so content flows naturally */
+  html,body,#app,#app-body,#content-area{
+    display:block !important;height:auto !important;
+    min-height:0 !important;overflow:visible !important;
+  }
+  /* Show only the active screen */
+  .screen{display:none !important;}
+  .screen.on{display:block !important;padding:12px !important;max-width:100% !important;}
+  /* Show only the active stage and sec */
+  .stage-panel{display:none !important;}
+  .stage-panel.on{display:block !important;}
+  .sec{display:none !important;}
+  .sec.on{display:block !important;}
+  /* Cards */
+  .panel{break-inside:avoid;box-shadow:none !important;}
+  /* Watermark */
   #print-watermark{
-    display:block !important;
-    position:fixed;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%) rotate(-40deg);
-    font-size:52pt;
-    font-weight:800;
-    color:rgba(11,31,58,.08);
-    white-space:nowrap;
-    pointer-events:none;
-    z-index:9999;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    font-family:"Plus Jakarta Sans","DM Sans",sans-serif;
-    line-height:1.2;
-    text-align:center;
-    width:100%;
+    display:block !important;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%) rotate(-40deg);font-size:52pt;font-weight:800;
+    color:rgba(11,31,58,.08);white-space:nowrap;pointer-events:none;z-index:9999;
+    letter-spacing:2px;text-transform:uppercase;
+    font-family:"Plus Jakarta Sans","DM Sans",sans-serif;line-height:1.2;text-align:center;width:100%;
   }
 }
 </style>
@@ -3934,12 +3931,25 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 })();
 </script>
 <script>
-function printPage() {
+// Canvases that were swapped to <img> for printing — restored in afterprint
+var _printCanvasSwaps = [];
+
+window.addEventListener('beforeprint', function() {
   var screen = document.querySelector('.screen.on');
   if (!screen) return;
 
-  // For the reports stage: force a synchronous re-render so all canvases
-  // in the active sec have pixel data regardless of animation timing
+  // Fix the flex-height cage with inline styles (beats any stylesheet rule)
+  var app = document.getElementById('app');
+  var appBody = document.getElementById('app-body');
+  var ca = document.getElementById('content-area');
+  app._ps = app.style.cssText;
+  appBody._ps = appBody.style.cssText;
+  ca._ps = ca.style.cssText;
+  app.style.cssText = 'display:block;height:auto;overflow:visible;';
+  appBody.style.cssText = 'display:block;height:auto;overflow:visible;';
+  ca.style.cssText = 'display:block;height:auto;overflow:visible;';
+
+  // Force synchronous chart render so canvases have pixel data
   if (screen.querySelector('#stage-reports.on') && typeof buildReports === 'function') {
     var origAnim = Chart.defaults.animation;
     Chart.defaults.animation = false;
@@ -3947,39 +3957,40 @@ function printPage() {
     Chart.defaults.animation = origAnim;
   }
 
-  // Clone only the active sec — its canvases are now guaranteed rendered
-  var activeSec = screen.querySelector('.stage-panel.on .sec.on') || screen.querySelector('.sec.on');
-  var source = activeSec || screen;
-  var clone = source.cloneNode(true);
-
-  // Snapshot every canvas → img so charts appear in PDF
-  source.querySelectorAll('canvas').forEach(function(canvas, i) {
-    var cloneCanvas = clone.querySelectorAll('canvas')[i];
-    if (canvas.width > 0 && canvas.height > 0 && cloneCanvas) {
+  // Swap every visible canvas → <img> in place so the PDF captures them
+  _printCanvasSwaps = [];
+  screen.querySelectorAll('canvas').forEach(function(canvas) {
+    if (canvas.width > 0 && canvas.height > 0) {
       var img = document.createElement('img');
       img.src = canvas.toDataURL('image/png');
       img.style.cssText = 'width:100%;height:auto;display:block;';
-      cloneCanvas.parentNode.replaceChild(img, cloneCanvas);
+      canvas.parentNode.insertBefore(img, canvas);
+      canvas.style.display = 'none';
+      _printCanvasSwaps.push({canvas: canvas, img: img});
     }
   });
+});
 
-  var pr = document.getElementById('print-root');
-  pr.innerHTML = '';
-  var wrapper = document.createElement('div');
-  wrapper.className = 'screen on';
-  wrapper.appendChild(clone);
-  pr.appendChild(wrapper);
-  // Clean up only after the print dialog is closed — not on a fixed timer
-  // (window.print() returns immediately in modern browsers; a 500ms timeout
-  //  races against the async print renderer and empties the content too soon)
-  window.addEventListener('afterprint', function cleanup() {
-    pr.innerHTML = '';
-    window.removeEventListener('afterprint', cleanup);
+window.addEventListener('afterprint', function() {
+  // Restore canvases
+  _printCanvasSwaps.forEach(function(s) {
+    s.canvas.style.display = '';
+    if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
   });
+  _printCanvasSwaps = [];
+
+  // Restore layout
+  var app = document.getElementById('app');
+  var appBody = document.getElementById('app-body');
+  var ca = document.getElementById('content-area');
+  if (app) { app.style.cssText = app._ps || ''; app.style.display = 'flex'; }
+  if (appBody) appBody.style.cssText = appBody._ps || '';
+  if (ca) ca.style.cssText = ca._ps || '';
+});
+
+function printPage() {
   window.print();
 }
 </script>
-<div id="print-watermark">Confidential<br>Student Project Board</div>
-<div id="print-root"></div>
-</body>
+<div id="print-watermark">Confidential<br>Student Project Board</div></body>
 </html>
