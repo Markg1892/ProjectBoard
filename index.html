@@ -3942,8 +3942,10 @@ function printPage() {
   var reportsPanel = screen.querySelector('#stage-reports.on');
   if (reportsPanel) {
     var secs = reportsPanel.querySelectorAll('.sec');
-    // Temporarily show all hidden secs so Chart.js can size canvases
+    // Show all hidden secs so Chart.js can measure canvas dimensions
     secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = 'block'; });
+    // Force browser reflow so canvas sizes are updated before Chart.js reads them
+    void reportsPanel.offsetHeight;
     var origAnim = Chart.defaults.animation;
     Chart.defaults.animation = false;
     if (typeof buildReports === 'function') buildReports();
@@ -3952,7 +3954,7 @@ function printPage() {
       // Restore hidden secs and animation
       secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = ''; });
       Chart.defaults.animation = origAnim;
-    }, 400);
+    }, 600);
   } else {
     doPrint(screen);
   }
