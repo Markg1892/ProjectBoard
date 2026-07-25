@@ -3933,33 +3933,47 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 <script>
 function printPage() {
   var screen = document.querySelector('.screen.on');
+
+  // Clean up any leftover state from a previous interrupted print
+  document.querySelectorAll('img[data-ps]').forEach(function(img) {
+    if (img.parentNode) img.parentNode.removeChild(img);
+  });
+  document.querySelectorAll('canvas[data-ph]').forEach(function(c) {
+    c.style.display = '';
+    c.removeAttribute('data-ph');
+  });
+
   var swaps = [];
 
-  // Snapshot every visible canvas → <img> BEFORE window.print() is called.
-  // Chrome snapshots canvases for the print layout before beforeprint fires,
-  // so swapping here (synchronously, pre-print) is the only reliable approach.
   if (screen) {
     screen.querySelectorAll('canvas').forEach(function(canvas) {
       if (canvas.width > 0 && canvas.height > 0) {
         var img = document.createElement('img');
         try { img.src = canvas.toDataURL('image/png'); } catch(e) { return; }
+        img.setAttribute('data-ps', '1');
         img.style.cssText = 'width:100%;height:auto;display:block;max-width:100%;';
-        canvas.parentNode.insertBefore(img, canvas);
+        canvas.setAttribute('data-ph', '1');
         canvas.style.display = 'none';
+        canvas.parentNode.insertBefore(img, canvas);
         swaps.push({canvas: canvas, img: img});
       }
     });
   }
 
-  window.print();
-
-  // Restore canvases after the print dialog closes
-  window.addEventListener('afterprint', function cleanup() {
-    swaps.forEach(function(s) {
-      s.canvas.style.display = '';
-      if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
+  // Two rAFs let the browser lay out the new <img> elements before print
+  // layout is computed — without this Chrome prints blank chart areas
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      window.print();
+      window.addEventListener('afterprint', function cleanup() {
+        swaps.forEach(function(s) {
+          s.canvas.style.display = '';
+          s.canvas.removeAttribute('data-ph');
+          if (s.img.parentNode) s.img.parentNode.removeChild(s.img);
+        });
+        window.removeEventListener('afterprint', cleanup);
+      });
     });
-    window.removeEventListener('afterprint', cleanup);
   });
 }
 </script>
