@@ -3969,8 +3969,14 @@ function printPage() {
   wrapper.className = 'screen on';
   wrapper.appendChild(clone);
   pr.appendChild(wrapper);
+  // Clean up only after the print dialog is closed — not on a fixed timer
+  // (window.print() returns immediately in modern browsers; a 500ms timeout
+  //  races against the async print renderer and empties the content too soon)
+  window.addEventListener('afterprint', function cleanup() {
+    pr.innerHTML = '';
+    window.removeEventListener('afterprint', cleanup);
+  });
   window.print();
-  setTimeout(function(){ pr.innerHTML = ''; }, 500);
 }
 </script>
 <div id="print-watermark">Confidential<br>Student Project Board</div>
