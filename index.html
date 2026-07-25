@@ -3937,6 +3937,28 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 function printPage() {
   var screen = document.querySelector('.screen.on');
   if (!screen) return;
+
+  // If the reports stage is active, pre-render all hidden sub-tab charts first
+  var reportsPanel = screen.querySelector('#stage-reports.on');
+  if (reportsPanel) {
+    var secs = reportsPanel.querySelectorAll('.sec');
+    // Temporarily show all hidden secs so Chart.js can size canvases
+    secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = 'block'; });
+    var origAnim = Chart.defaults.animation;
+    Chart.defaults.animation = false;
+    if (typeof buildReports === 'function') buildReports();
+    setTimeout(function() {
+      doPrint(screen);
+      // Restore hidden secs and animation
+      secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = ''; });
+      Chart.defaults.animation = origAnim;
+    }, 400);
+  } else {
+    doPrint(screen);
+  }
+}
+
+function doPrint(screen) {
   var pr = document.getElementById('print-root');
   pr.innerHTML = '';
   var clone = screen.cloneNode(true);
