@@ -3937,45 +3937,31 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 function printPage() {
   var screen = document.querySelector('.screen.on');
   if (!screen) return;
-
-  // If the reports stage is active, pre-render all hidden sub-tab charts first
-  var reportsPanel = screen.querySelector('#stage-reports.on');
-  if (reportsPanel) {
-    var secs = reportsPanel.querySelectorAll('.sec');
-    // Show all hidden secs so Chart.js can measure canvas dimensions
-    secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = 'block'; });
-    // Force browser reflow so canvas sizes are updated before Chart.js reads them
-    void reportsPanel.offsetHeight;
-    var origAnim = Chart.defaults.animation;
-    Chart.defaults.animation = false;
-    if (typeof buildReports === 'function') buildReports();
-    setTimeout(function() {
-      doPrint(screen);
-      // Restore hidden secs and animation
-      secs.forEach(function(s) { if (!s.classList.contains('on')) s.style.display = ''; });
-      Chart.defaults.animation = origAnim;
-    }, 600);
-  } else {
-    doPrint(screen);
-  }
-}
-
-function doPrint(screen) {
   var pr = document.getElementById('print-root');
   pr.innerHTML = '';
-  var clone = screen.cloneNode(true);
-  // Snapshot canvas charts → img so they appear in print
-  var canvases = screen.querySelectorAll('canvas');
-  var cloneCanvases = clone.querySelectorAll('canvas');
-  canvases.forEach(function(canvas, i) {
-    if (canvas.width > 0 && canvas.height > 0) {
+
+  // For any screen with sub-tabs (.sec), clone only the active sec so we
+  // never try to snapshot canvases in hidden (0x0) elements
+  var activeSec = screen.querySelector('.stage-panel.on .sec.on') || screen.querySelector('.sec.on');
+  var source = activeSec || screen;
+
+  var clone = source.cloneNode(true);
+  // Snapshot canvas charts → img
+  source.querySelectorAll('canvas').forEach(function(canvas, i) {
+    var cloneCanvas = clone.querySelectorAll('canvas')[i];
+    if (canvas.width > 0 && canvas.height > 0 && cloneCanvas) {
       var img = document.createElement('img');
       img.src = canvas.toDataURL('image/png');
       img.style.cssText = 'width:100%;height:auto;display:block;';
-      cloneCanvases[i].parentNode.replaceChild(img, cloneCanvases[i]);
+      cloneCanvas.parentNode.replaceChild(img, cloneCanvas);
     }
   });
-  pr.appendChild(clone);
+
+  // Wrap in a screen div so existing print CSS applies
+  var wrapper = document.createElement('div');
+  wrapper.className = 'screen on';
+  wrapper.appendChild(clone);
+  pr.appendChild(wrapper);
   window.print();
   setTimeout(function(){ pr.innerHTML = ''; }, 500);
 }
