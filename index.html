@@ -2447,12 +2447,14 @@ function showReportsNav() {
   var targetId = (currentProjectId && projects.find(function(p){ return p.id===currentProjectId; }))
     ? currentProjectId : projects[0].id;
   openProject(targetId);
+  showScreen('scr-project', []);
   showStage('reports');
   _populateReportsSel(projects, targetId);
 }
 
 function switchReportsProject(id) {
   openProject(id);
+  showScreen('scr-project', []);
   showStage('reports');
   var projects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
   _populateReportsSel(projects, id);
