@@ -1174,7 +1174,9 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
           <!-- Project selector — shown for admin/teacher when entering via Reports nav -->
           <div id="reports-proj-row" style="display:none;margin-bottom:18px;padding:14px 16px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <span style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Project</span>
+              <span style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Class</span>
+              <select id="reports-class-sel" onchange="switchReportsClass(this.value)" style="flex:1;min-width:160px;max-width:280px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--navy);background:#fff;cursor:pointer;font-family:inherit;"></select>
+              <span style="font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;margin-left:4px;">Project</span>
               <select id="reports-proj-sel" onchange="switchReportsProject(this.value)" style="flex:1;min-width:200px;max-width:420px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--navy);background:#fff;cursor:pointer;font-family:inherit;"></select>
             </div>
           </div>
@@ -2442,31 +2444,82 @@ function openProject(id){
 }
 
 function showReportsNav() {
-  var projects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
-  if (!projects.length) return;
-  var targetId = (currentProjectId && projects.find(function(p){ return p.id===currentProjectId; }))
-    ? currentProjectId : projects[0].id;
+  var allProjects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
+  if (!allProjects.length) return;
+
+  // Determine classes visible to this role
+  var classes = _reportsClasses();
+  var targetClassId = classes.length ? classes[0].id : null;
+
+  // If current project is in a visible class, prefer that class
+  if (currentProjectId) {
+    var cur = allProjects.find(function(p){ return p.id===currentProjectId; });
+    if (cur && cur.classId && classes.find(function(c){ return c.id===cur.classId; })) {
+      targetClassId = cur.classId;
+    }
+  }
+
+  var classProjects = targetClassId
+    ? allProjects.filter(function(p){ return p.classId===targetClassId; })
+    : allProjects;
+  if (!classProjects.length) classProjects = allProjects;
+
+  var targetId = (currentProjectId && classProjects.find(function(p){ return p.id===currentProjectId; }))
+    ? currentProjectId : classProjects[0].id;
+
   openProject(targetId);
   showScreen('scr-project', []);
   showStage('reports');
-  _populateReportsSel(projects, targetId);
+  _populateReportsSelectors(classes, targetClassId, classProjects, targetId);
+}
+
+function switchReportsClass(classId) {
+  var allProjects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
+  var classProjects = classId
+    ? allProjects.filter(function(p){ return p.classId===classId; })
+    : allProjects;
+  if (!classProjects.length) return;
+  var targetId = classProjects[0].id;
+  openProject(targetId);
+  showScreen('scr-project', []);
+  showStage('reports');
+  // Only repopulate project selector; class selector already reflects user choice
+  var sel = document.getElementById('reports-proj-sel');
+  if (sel) sel.innerHTML = classProjects.map(function(p){
+    return '<option value="'+p.id+'"'+(p.id===targetId?' selected':'')+'>'+p.name+'</option>';
+  }).join('');
 }
 
 function switchReportsProject(id) {
   openProject(id);
   showScreen('scr-project', []);
   showStage('reports');
-  var projects = db.projects.filter(function(p){ return p.schoolId === sess.schoolId; });
-  _populateReportsSel(projects, id);
+  // Keep selectors as-is, just ensure project option is selected
+  var sel = document.getElementById('reports-proj-sel');
+  if (sel) { sel.value = id; }
 }
 
-function _populateReportsSel(projects, selectedId) {
+function _reportsClasses() {
+  if (sess.role === 'admin') {
+    return db.classes.filter(function(c){ return c.schoolId === sess.schoolId; });
+  }
+  // teacher — only their classes
+  var me = db.users.find(function(u){ return u.schoolId===sess.schoolId && u.name.toLowerCase()===sess.name.toLowerCase() && u.role==='teacher'; });
+  var myClassIds = me && me.classIds ? me.classIds : [];
+  return db.classes.filter(function(c){ return c.schoolId===sess.schoolId && myClassIds.indexOf(c.id)!==-1; });
+}
+
+function _populateReportsSelectors(classes, selectedClassId, classProjects, selectedProjId) {
   var row = document.getElementById('reports-proj-row');
-  var sel = document.getElementById('reports-proj-sel');
-  if (!row || !sel) return;
+  var classSel = document.getElementById('reports-class-sel');
+  var projSel = document.getElementById('reports-proj-sel');
+  if (!row || !classSel || !projSel) return;
   row.style.display = 'block';
-  sel.innerHTML = projects.map(function(p){
-    return '<option value="'+p.id+'"'+(p.id===selectedId?' selected':'')+'>'+p.name+'</option>';
+  classSel.innerHTML = classes.map(function(c){
+    return '<option value="'+c.id+'"'+(c.id===selectedClassId?' selected':'')+'>'+c.name+'</option>';
+  }).join('');
+  projSel.innerHTML = classProjects.map(function(p){
+    return '<option value="'+p.id+'"'+(p.id===selectedProjId?' selected':'')+'>'+p.name+'</option>';
   }).join('');
 }
 
