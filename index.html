@@ -212,6 +212,20 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .empty-title{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:1.1rem;color:var(--navy);margin-bottom:6px;letter-spacing:-0.01em;}
 .empty-desc{font-size:.82rem;line-height:1.6;}
 
+/* ── STUDY HUB ── */
+.sh-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:680px){.sh-two-col{grid-template-columns:1fr;}}
+.sh-flash-wrap{perspective:1000px;cursor:pointer;margin-bottom:12px;}
+.sh-flash-inner{position:relative;width:100%;min-height:160px;transform-style:preserve-3d;transition:transform .45s ease;border-radius:12px;}
+.sh-flash-inner.flipped{transform:rotateY(180deg);}
+.sh-flash-front,.sh-flash-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;padding:20px;display:flex;flex-direction:column;justify-content:center;}
+.sh-flash-front{background:linear-gradient(135deg,var(--navy) 0%,#004A8F 100%);color:#fff;}
+.sh-flash-back{background:linear-gradient(135deg,#00897B 0%,#00B5AD 100%);color:#fff;transform:rotateY(180deg);}
+.sh-row{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;background:var(--light);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;}
+.sh-row:hover{background:#e0f2f1;}
+.sh-missed-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem;}
+.sh-missed-row:last-child{border-bottom:none;}
+
 /* ════════════════════════════════════════
    IDEAS TAB STYLES
 ════════════════════════════════════════ */
@@ -707,6 +721,59 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
       <button class="btn btn-o btn-sm print-btn" onclick="printPage()">🖨 Print / PDF</button>
     </div>
     <div id="teacher-classes-section"></div>
+  </div>
+
+  <!-- ── SCREEN: STUDY HUB ── -->
+  <div class="screen" id="scr-studyhub">
+    <!-- Hero banner -->
+    <div style="background:linear-gradient(135deg,var(--navy) 0%,#004A8F 100%);color:#fff;border-radius:14px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:.7rem;opacity:.6;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Your daily project check-in</div>
+        <div style="font-size:1.4rem;font-weight:700;">🔥 Study Hub</div>
+        <div style="font-size:.78rem;opacity:.75;margin-top:4px;" id="sh-hero-sub">Loading your project…</div>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border-radius:12px;padding:12px 20px;text-align:center;min-width:90px;">
+        <div style="font-size:1.8rem;font-weight:700;color:#FFD166;" id="sh-progress">—</div>
+        <div style="font-size:.7rem;opacity:.65;margin-top:2px;">Stage progress</div>
+      </div>
+    </div>
+
+    <div class="sh-two-col">
+      <!-- Left: flashcards -->
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:10px;">📇 Project Methodology Cards <span style="font-size:.72rem;font-weight:400;color:var(--muted);" id="sh-fc-count"></span></div>
+        <div class="sh-flash-wrap" onclick="shFlipCard()">
+          <div class="sh-flash-inner" id="sh-flash-inner">
+            <div class="sh-flash-front">
+              <div style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:8px;" id="sh-fc-tag">Concept</div>
+              <div style="font-size:.88rem;font-weight:600;line-height:1.5;" id="sh-fc-q">Loading…</div>
+              <div style="font-size:.68rem;opacity:.45;margin-top:12px;">Tap to reveal answer</div>
+            </div>
+            <div class="sh-flash-back">
+              <div style="font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:8px;">Answer</div>
+              <div style="font-size:.8rem;line-height:1.65;" id="sh-fc-a">Loading…</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <button class="btn btn-o btn-sm" onclick="shRateCard(0)">😕 Review again</button>
+          <span style="font-size:.72rem;color:var(--muted);" id="sh-fc-prog">Card 1 of 8</span>
+          <button class="btn btn-t btn-sm" onclick="shRateCard(1)">😊 Got it</button>
+        </div>
+      </div>
+
+      <!-- Right: What to do + What I missed -->
+      <div>
+        <div class="panel" style="margin-bottom:12px;">
+          <div class="panel-t">🎯 What to do next</div>
+          <div id="sh-what-next"><div style="font-size:.8rem;color:var(--muted);">Loading…</div></div>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--gold);">
+          <div class="panel-t">⚠️ What did I miss?</div>
+          <div id="sh-what-missed"><div style="font-size:.8rem;color:var(--muted);">Loading…</div></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── SCREEN: COMMUNITY ── -->
@@ -1535,6 +1602,7 @@ function buildSidebarNav(){
   } else {
     html += sbSection('My Project');
     html += sbItem('Project Board',   'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'showStudentView()');
+    html += sbItem('Study Hub',       'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'showStudyHub()');
     html += sbSection('Stages');
     html += sbItem('Explore Idea',    'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', 'showStudentView();showStage(\'explore\')');
     html += sbItem('Plan',            'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'showStudentView();showStage(\'plan\')');
@@ -2080,6 +2148,117 @@ function showTeacherDashboard(){
     });
   }
   showScreen('scr-teacher');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// STUDY HUB
+// ═══════════════════════════════════════════════════════════
+var SH_CARDS = [
+  { tag:'Explore Stage', q:'What is the purpose of the Explore stage?', a:'To research and understand the problem space before committing to a solution. You gather insights, define the challenge, and build a shared understanding with your team.' },
+  { tag:'IdeaBoard', q:'What makes a strong idea on the IdeaBoard?', a:'A strong idea is specific, feasible within your constraints, and directly addresses the problem you identified in Explore. Include who it helps and how.' },
+  { tag:'Plan Stage', q:'What goes in a Project Brief?', a:'The project brief captures your chosen solution, the target audience, key deliverables, timeline with milestones, team roles, and success criteria.' },
+  { tag:'Risk Log', q:'What is a Risk Log and why does it matter?', a:'A Risk Log tracks potential problems before they happen — listing each risk, its likelihood, impact, and your mitigation plan. It keeps the team prepared and shows stakeholders you\'ve thought ahead.' },
+  { tag:'Create Stage', q:'What is the difference between a milestone and a task?', a:'A milestone marks a significant point of completion (e.g. "Prototype ready"). A task is a specific piece of work done to reach that milestone. Milestones have no duration; tasks do.' },
+  { tag:'Stage Gates', q:'What is a Stage Gate check?', a:'A Stage Gate is a structured review at the end of each stage confirming all required outputs are complete before the team progresses. Your teacher approves the gate.' },
+  { tag:'Handover', q:'What should a Handover include?', a:'A Handover package includes your final deliverable, a handover document explaining how to use or maintain it, lessons learned, and any outstanding risks or follow-up actions.' },
+  { tag:'Reflection', q:'What is the point of the Reports stage?', a:'Reports help the team and teacher evaluate what was achieved, how well the project was managed, and what each student contributed. It\'s evidence of learning, not just output.' },
+];
+var shCardIdx = 0;
+
+function showStudyHub() {
+  showScreen('scr-studyhub');
+  shRenderCard();
+  var myProjects = db.projects.filter(function(p){
+    return p.schoolId===sess.schoolId && p.students.some(function(s){ return s.toLowerCase()===sess.name.toLowerCase(); });
+  });
+  var p = myProjects.length ? (currentProjectId ? myProjects.find(function(x){return x.id===currentProjectId;}) || myProjects[0] : myProjects[0]) : null;
+
+  // Hero
+  var stages = ['explore','plan','create','handover','reports'];
+  var stageLabels = {explore:'Explore',plan:'Plan',create:'Create',handover:'Handover',reports:'Reports'};
+  var currentStageName = 'explore';
+  if (p) {
+    stages.forEach(function(s){
+      var panel = document.getElementById('stage-'+s);
+      if (panel && panel.classList.contains('on')) currentStageName = s;
+    });
+  }
+  var stageIdx = stages.indexOf(currentStageName);
+  var progress = p ? Math.round(((stageIdx) / (stages.length - 1)) * 100) + '%' : '—';
+  document.getElementById('sh-progress').textContent = progress;
+  document.getElementById('sh-hero-sub').textContent = p
+    ? (p.name + ' · ' + stageLabels[currentStageName] + ' stage')
+    : 'No project found — ask your teacher to add you.';
+
+  // What to do next
+  var next = [];
+  if (p) {
+    var gateId = 'gate-' + currentStageName;
+    var gate = document.getElementById(gateId);
+    if (gate) {
+      var unchecked = gate.querySelectorAll('input[type=checkbox]:not(:checked)');
+      if (unchecked.length) {
+        next.push({ icon:'✅', text: unchecked.length + ' gate item' + (unchecked.length>1?'s':'') + ' still to complete in ' + stageLabels[currentStageName] + '.', action:'Go to stage', fn:"showStudentView();showStage('"+currentStageName+"')" });
+      }
+    }
+    if (stageIdx < stages.length - 2) {
+      var nextStage = stageLabels[stages[stageIdx+1]];
+      next.push({ icon:'🚀', text:'Get ahead — review what\'s needed for the ' + nextStage + ' stage before your gate check.', action:'Open ' + nextStage, fn:"showStudentView();showStage('"+stages[stageIdx+1]+"')" });
+    }
+    var ideaCount = (p.data&&p.data.ideaboard) ? p.data.ideaboard.length : 0;
+    if (currentStageName === 'explore' && ideaCount < 3) {
+      next.push({ icon:'💡', text:'Your team has ' + ideaCount + ' idea' + (ideaCount!==1?'s':'') + '. Aim for at least 3 before the Explore gate.', action:'IdeaBoard', fn:"showStudentView();showStage('explore')" });
+    }
+    next.push({ icon:'💬', text:'Check Discussions for any updates or questions from your teacher.', action:'Discussions', fn:"showCommunity('disc')" });
+  } else {
+    next.push({ icon:'🎓', text:'You haven\'t been added to a project yet. Ask your teacher to invite you.', action:'', fn:'' });
+  }
+  document.getElementById('sh-what-next').innerHTML = next.map(function(item){
+    return '<div class="sh-row" onclick="'+(item.fn?item.fn:'')+'">'
+      +'<div style="font-size:1rem;flex-shrink:0;">'+item.icon+'</div>'
+      +'<div style="flex:1;font-size:.78rem;color:var(--navy);line-height:1.4;">'+item.text+'</div>'
+      +(item.action?'<div style="font-size:.7rem;color:var(--teal2);font-weight:600;white-space:nowrap;">'+item.action+' →</div>':'')
+      +'</div>';
+  }).join('');
+
+  // What did I miss
+  var missed = [];
+  var unread = PB_NOTIFS.filter(function(n){return n.unread;});
+  unread.slice(0,3).forEach(function(n){
+    missed.push({ icon:'🔔', text:n.title, sub:n.time });
+  });
+  if (!missed.length) {
+    missed.push({ icon:'✔️', text:'You\'re all caught up!', sub:'No unread notifications.' });
+  }
+  document.getElementById('sh-what-missed').innerHTML = missed.map(function(m){
+    return '<div class="sh-missed-row">'
+      +'<div style="font-size:.9rem;flex-shrink:0;">'+m.icon+'</div>'
+      +'<div><div style="font-weight:600;font-size:.78rem;color:var(--navy);">'+m.text+'</div>'
+      +'<div style="font-size:.68rem;color:var(--muted);margin-top:1px;">'+m.sub+'</div></div></div>';
+  }).join('');
+}
+
+function shRenderCard() {
+  var card = SH_CARDS[shCardIdx % SH_CARDS.length];
+  var inner = document.getElementById('sh-flash-inner');
+  if (inner) inner.classList.remove('flipped');
+  var q = document.getElementById('sh-fc-q'); if (q) q.textContent = card.q;
+  var a = document.getElementById('sh-fc-a'); if (a) a.textContent = card.a;
+  var tag = document.getElementById('sh-fc-tag'); if (tag) tag.textContent = card.tag;
+  var prog = document.getElementById('sh-fc-prog');
+  if (prog) prog.textContent = 'Card ' + ((shCardIdx % SH_CARDS.length) + 1) + ' of ' + SH_CARDS.length;
+}
+
+function shFlipCard() {
+  var i = document.getElementById('sh-flash-inner');
+  if (i) i.classList.toggle('flipped');
+}
+
+function shRateCard(ok) {
+  shCardIdx++;
+  shRenderCard();
+  showToast(ok ? '✓ Got it — moving to next card' : '↩ Card queued for review');
 }
 
 // ═══════════════════════════════════════════════════════════
