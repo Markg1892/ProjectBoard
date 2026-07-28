@@ -244,6 +244,10 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ib-note-del{position:absolute;top:4px;right:4px;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.25);font-size:.75rem;padding:1px 3px;border-radius:3px;display:none;}
 .ib-note:hover .ib-note-del{display:block;}
 .ib-note-del:hover{color:var(--red);background:rgba(229,62,62,.1);}
+.ib-vote-btn{display:flex;align-items:center;gap:3px;margin-top:7px;background:none;border:1px solid rgba(0,0,0,.12);border-radius:20px;padding:2px 7px 2px 5px;cursor:pointer;font-size:.72rem;color:rgba(0,0,0,.45);font-family:inherit;transition:all .15s;}
+.ib-vote-btn:hover{border-color:var(--teal);color:var(--teal);}
+.ib-vote-btn.voted{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ib-vote-btn .vcount{font-weight:700;min-width:8px;text-align:center;}
 .note-y{background:#FFF9C4;} .note-b{background:#DDEEFF;} .note-g{background:#D4F5E3;} .note-p{background:#FFE4F0;}
 .ib-add-btn{min-width:90px;min-height:80px;padding:8px;border-radius:8px;border:2px dashed var(--border);background:transparent;color:var(--muted);font-size:.76rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .15s;font-family:"DM Sans",sans-serif;}
 .ib-add-btn:hover{border-color:var(--teal);color:var(--teal);background:#f0fffe;}
@@ -1236,6 +1240,12 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
             <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px;">
               <div class="panel"><div class="panel-t">📅 Ideas Timeline</div><canvas id="chart-ideas-timeline" height="180"></canvas></div>
               <div class="panel"><div class="panel-t">🍩 Zone Distribution</div><canvas id="chart-ideas-donut" height="180"></canvas></div>
+            </div>
+
+            <!-- Top Voted Ideas chart -->
+            <div class="panel" id="report-ideas-votes-panel" style="margin-bottom:14px;display:none;">
+              <div class="panel-t">👍 Top Voted Ideas</div>
+              <canvas id="chart-ideas-votes" height="200"></canvas>
             </div>
 
             <!-- Ideas log table -->
@@ -3533,17 +3543,55 @@ function buildReports(){
   var myCount = ideas.filter(function(n){ return n.author === sess.name; }).length;
   var topContrib = Object.entries(contributorSet).sort(function(a,b){return b[1]-a[1];})[0];
 
+  // Voting analytics
+  var totalVotes = ideas.reduce(function(a,n){ return a+(n.votes?n.votes.length:0); }, 0);
+  var topVoted = ideas.slice().sort(function(a,b){ return (b.votes?b.votes.length:0)-(a.votes?a.votes.length:0); }).filter(function(n){ return n.votes&&n.votes.length>0; });
+
   var ideaSummaryKpis = [
     {label:'Total Ideas',    value:String(ideas.length),             sub:numContribs+' contributor'+(numContribs!==1?'s':''),    color:'var(--teal)'},
     {label:'Active Zones',   value:String(numActiveZones)+' / 4',    sub:'of 4 zones used',                                      color:'var(--purple)'},
-    {label:'My Contribution',value:String(myCount),                  sub:'idea'+(myCount!==1?'s':'')+' posted',                  color:'var(--gold)'},
-    {label:'Top Contributor',value:topContrib?topContrib[0].split(' ')[0]:'—', sub:topContrib?topContrib[1]+' idea'+(topContrib[1]!==1?'s':''):'', color:'var(--green)'}
+    {label:'Total Votes',    value:String(totalVotes),               sub:topVoted.length+' idea'+(topVoted.length!==1?'s':'')+' received votes', color:'var(--gold)'},
+    {label:'Top Voted Idea', value:topVoted.length?String(topVoted[0].votes.length)+' vote'+(topVoted[0].votes.length!==1?'s':''):'—',
+                             sub:topVoted.length?'"'+topVoted[0].text.substring(0,28)+(topVoted[0].text.length>28?'…':'')+'"':'No votes yet', color:'var(--green)'}
   ];
   document.getElementById('report-ideas-summary').innerHTML = ideaSummaryKpis.map(function(k){
     return '<div class="stat" style="border-left-color:'+k.color+'"><div class="stat-l">'+k.label+'</div>'
       +'<div class="stat-v" style="font-size:1.3rem;color:'+k.color+'">'+k.value+'</div>'
       +'<div class="stat-s">'+k.sub+'</div></div>';
   }).join('');
+
+  // Top Voted Ideas chart
+  var votesPanel = document.getElementById('report-ideas-votes-panel');
+  destroyChart('ideas-votes');
+  if(topVoted.length) {
+    votesPanel.style.display = '';
+    var topN = topVoted.slice(0, 8);
+    chartInstances['ideas-votes'] = new Chart(document.getElementById('chart-ideas-votes').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: topN.map(function(n){ var t=n.text; return t.length>30?t.substring(0,28)+'…':t; }),
+        datasets: [{
+          label: 'Votes',
+          data: topN.map(function(n){ return n.votes?n.votes.length:0; }),
+          backgroundColor: C.teal+'CC', borderColor: C.teal, borderWidth: 2, borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx){ return ctx.parsed.x+' vote'+(ctx.parsed.x!==1?'s':''); }}}
+        },
+        scales: {
+          x: { ticks: { color: C.muted, font: { size: 10 }, stepSize: 1 }, grid: { color: '#eee' } },
+          y: { ticks: { color: C.navy, font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+  } else {
+    votesPanel.style.display = 'none';
+  }
 
   // Chart: Ideas by Zone (vertical bar)
   destroyChart('ideas-zone');
@@ -3751,6 +3799,17 @@ function deleteIdea(idx){
   save(); renderIdeaBoard();
 }
 
+function voteIdea(idx){
+  if(!currentProjectId) return;
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return;
+  var idea=p.data&&p.data.ideaboard&&p.data.ideaboard[idx]; if(!idea) return;
+  if(!idea.votes) idea.votes=[];
+  var pos=idea.votes.indexOf(sess.name);
+  if(pos===-1){ idea.votes.push(sess.name); showIbToast('👍 Vote added!'); }
+  else        { idea.votes.splice(pos,1);    showIbToast('Vote removed.'); }
+  save(); renderIdeaBoard();
+}
+
 function getNoteColor(name){
   var people=getProjectPeople();
   var idx=people.indexOf(name);
@@ -3785,9 +3844,19 @@ function renderIdeaBoard(){
       var globalIdx=ideas.indexOf(note);
       var cls=getNoteColor(note.author);
       var canDel=sess.role==='admin'||sess.role==='teacher'||note.author===sess.name;
+      var votes=note.votes||[];
+      var hasVoted=votes.indexOf(sess.name)!==-1;
+      var vCount=votes.length;
+      // Students can vote on any idea (including their own to toggle); admin/teacher see count read-only
+      var voteBtn=sess.role==='student'
+        ?'<button class="ib-vote-btn'+(hasVoted?' voted':'')+'" onclick="voteIdea('+globalIdx+')" title="'+(hasVoted?'Remove vote':'Vote for this idea')+'">👍 <span class="vcount">'+vCount+'</span></button>'
+        :(vCount>0?'<div class="ib-vote-btn" style="cursor:default;pointer-events:none;">👍 <span class="vcount">'+vCount+'</span></div>':'');
       notesHtml+='<div class="ib-note '+cls+'">'
         +escHtml(note.text)
-        +'<div class="ib-note-au">'+escHtml(note.author)+'</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
+        +'<div class="ib-note-au" style="margin-top:0;">'+escHtml(note.author)+'</div>'
+        +voteBtn
+        +'</div>'
         +(canDel?'<button class="ib-note-del" onclick="deleteIdea('+globalIdx+')" title="Remove">✕</button>':'')
         +'</div>';
     });
