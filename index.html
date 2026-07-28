@@ -1450,7 +1450,7 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 <div class="overlay" id="modal-idea">
   <div class="modal" style="width:420px">
     <div class="modal-t">💡 Add Your Idea</div>
-    <div class="modal-sub">Post a sticky note to the IdeaBoard — visible to your whole team.</div>
+    <div class="modal-sub" id="idea-modal-sub">Post a sticky note to the IdeaBoard — visible to your whole team.</div>
     <div class="fg">
       <label>Your Idea</label>
       <textarea id="idea-txt" rows="3" placeholder="Type your idea here…" style="resize:vertical"></textarea>
@@ -1463,6 +1463,12 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
         <option value="2">⚠️ Challenges &amp; Risks</option>
         <option value="free">🌐 Free Brainstorm</option>
       </select>
+    </div>
+    <div id="idea-private-wrap" style="display:none;margin-top:10px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;color:var(--navy);font-weight:600;">
+        <input type="checkbox" id="idea-private-chk" style="width:15px;height:15px;accent-color:var(--navy);">
+        🔒 Keep private — only you and your teacher can see this
+      </label>
     </div>
     <div class="modal-acts">
       <button class="btn btn-o" onclick="closeModals()">Cancel</button>
@@ -3900,7 +3906,11 @@ function renderIdeaBoard(){
     var hiddenCount=zoneNotes.length-myZoneNotes.length;
     var zoneEl=document.createElement('div'); zoneEl.className='ib-zone';
     var notesHtml='<div class="ib-notes" id="ib-zone-notes-'+zone.id+'">';
-    var notesToRender=(privateMode&&isStudent)?myZoneNotes:zoneNotes;
+    // Also filter per-idea private notes: students can't see other students' private ideas
+    var notesToRender=(privateMode&&isStudent)?myZoneNotes:zoneNotes.filter(function(n){
+      if(n.private && isStudent && n.author!==sess.name) return false;
+      return true;
+    });
     notesToRender.forEach(function(note){
       var globalIdx=ideas.indexOf(note);
       var cls=getNoteColor(note.author);
@@ -3911,10 +3921,11 @@ function renderIdeaBoard(){
       var voteBtn=isStudent
         ?'<button class="ib-vote-btn'+(hasVoted?' voted':'')+'" onclick="voteIdea('+globalIdx+')" title="'+(hasVoted?'Remove vote':'Vote for this idea')+'">👍 <span class="vcount">'+vCount+'</span></button>'
         :(vCount>0?'<div class="ib-vote-btn" style="cursor:default;pointer-events:none;">👍 <span class="vcount">'+vCount+'</span></div>':'');
+      var privateTag=note.private?'<span title="Private idea" style="font-size:.65rem;opacity:.6;margin-left:4px;">🔒</span>':'';
       notesHtml+='<div class="ib-note '+cls+'">'
         +escHtml(note.text)
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
-        +'<div class="ib-note-au" style="margin-top:0;">'+escHtml(note.author)+'</div>'
+        +'<div class="ib-note-au" style="margin-top:0;">'+escHtml(note.author)+privateTag+'</div>'
         +voteBtn
         +'</div>'
         +(canDel?'<button class="ib-note-del" onclick="deleteIdea('+globalIdx+')" title="Remove">✕</button>':'')
@@ -3968,15 +3979,27 @@ function toggleIbPrivateMode(){
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+function _prepIdeaModal(){
+  var chk=document.getElementById('idea-private-chk');
+  var wrap=document.getElementById('idea-private-wrap');
+  var sub=document.getElementById('idea-modal-sub');
+  if(chk) chk.checked=false;
+  if(wrap) wrap.style.display=sess.role==='student'?'block':'none';
+  if(sub) sub.textContent=sess.role==='student'
+    ?'Post a sticky note to the IdeaBoard.'
+    :'Post a sticky note to the IdeaBoard — visible to your whole team.';
+}
 function openIdeaModal(){
   document.getElementById('idea-txt').value='';
   document.getElementById('idea-zone').value='0';
+  _prepIdeaModal();
   openModal('modal-idea');
   setTimeout(function(){document.getElementById('idea-txt').focus();},80);
 }
 function openIdeaModalForZone(zoneId){
   document.getElementById('idea-txt').value='';
   document.getElementById('idea-zone').value=zoneId;
+  _prepIdeaModal();
   openModal('modal-idea');
   setTimeout(function(){document.getElementById('idea-txt').focus();},80);
 }
@@ -3984,9 +4007,11 @@ function submitIdea(){
   var txt=document.getElementById('idea-txt').value.trim();
   if(!txt){showIbToast('Please enter an idea.');return;}
   var zone=document.getElementById('idea-zone').value;
-  saveIdea({text:txt,zone:zone,author:sess.name,ts:Date.now()});
+  var chk=document.getElementById('idea-private-chk');
+  var isPrivate=chk&&chk.checked&&sess.role==='student';
+  saveIdea({text:txt,zone:zone,author:sess.name,ts:Date.now(),private:isPrivate||undefined});
   closeModals(); renderIdeaBoard();
-  showIbToast('💡 Idea posted to the board!');
+  showIbToast(isPrivate?'🔒 Private idea saved — only you and your teacher can see it.':'💡 Idea posted to the board!');
 }
 
 // ── Stat card drill-down panels ───────────────────────────────────────────
@@ -4190,6 +4215,14 @@ function closeModals(){ document.querySelectorAll('.overlay').forEach(function(o
 // ── INIT ──────────────────────────────────────────────────
 (function init(){
   load();
+
+  // Cross-tab sync: when teacher toggles private mode (or any db change) in another tab, re-render IdeaBoard
+  window.addEventListener('storage', function(e){
+    if(e.key==='vc_db11'){
+      load();
+      if(sess && currentProjectId) renderIdeaBoard();
+    }
+  });
 
   // Seed demo data if empty
   if(!db.schools.length){
