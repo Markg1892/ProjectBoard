@@ -249,6 +249,14 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ib-vote-btn.voted{background:var(--teal);border-color:var(--teal);color:#fff;}
 .ib-vote-btn .vcount{font-weight:700;min-width:8px;text-align:center;}
 .note-y{background:#FFF9C4;} .note-b{background:#DDEEFF;} .note-g{background:#D4F5E3;} .note-p{background:#FFE4F0;}
+@media print{
+  .note-y{background:#FFF9C4 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .note-b{background:#DDEEFF !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .note-g{background:#D4F5E3 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .note-p{background:#FFE4F0 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .ib-note{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .ib-zone{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
 .ib-add-btn{min-width:90px;min-height:80px;padding:8px;border-radius:8px;border:2px dashed var(--border);background:transparent;color:var(--muted);font-size:.76rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .15s;font-family:"DM Sans",sans-serif;}
 .ib-add-btn:hover{border-color:var(--teal);color:var(--teal);background:#f0fffe;}
 .ib-add-btn span{font-size:1.3rem;line-height:1;}
