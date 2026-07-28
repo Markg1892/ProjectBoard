@@ -248,6 +248,15 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ib-vote-btn:hover{border-color:var(--teal);color:var(--teal);}
 .ib-vote-btn.voted{background:var(--teal);border-color:var(--teal);color:#fff;}
 .ib-vote-btn .vcount{font-weight:700;min-width:8px;text-align:center;}
+.ib-private-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(90deg,#FFF3CD,#FFF9E6);border:1.5px solid #F5C518;border-radius:9px;margin-bottom:14px;font-size:.82rem;color:#7A5C00;}
+.ib-private-banner b{font-weight:700;}
+.ib-private-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-size:.78rem;font-weight:600;color:var(--navy);padding:4px 10px;border:1.5px solid var(--border);border-radius:20px;background:#fff;transition:all .15s;}
+.ib-private-toggle:hover{border-color:var(--navy);}
+.ib-private-toggle.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.ib-private-toggle .ptoggle-dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .15s;}
+.ib-private-toggle.on .ptoggle-dot{background:#F5C518;}
+.ib-locked-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px;padding:16px 12px;background:rgba(0,0,0,.03);border:1.5px dashed var(--border);border-radius:8px;color:var(--muted);font-size:.78rem;text-align:center;}
+.ib-locked-zone .lz-icon{font-size:1.4rem;}
 .note-y{background:#FFF9C4;} .note-b{background:#DDEEFF;} .note-g{background:#D4F5E3;} .note-p{background:#FFE4F0;}
 @media print{
   .note-y{background:#FFF9C4 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -870,10 +879,18 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
                 <span style="font-family:Syne,sans-serif;font-weight:800;font-size:.95rem;">💡 IdeaBoard</span>
                 <div class="ib-live-pill"><div class="ib-live-dot"></div> Live · Collaborative</div>
               </div>
-              <div style="display:flex;gap:8px;align-items:center;">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div id="ib-private-toggle-wrap" style="display:none;">
+                  <button class="ib-private-toggle" id="ib-private-toggle-btn" onclick="toggleIbPrivateMode()" title="When on, students only see their own ideas">
+                    <span class="ptoggle-dot"></span><span id="ib-private-toggle-label">Private Mode</span>
+                  </button>
+                </div>
                 <button class="btn btn-o btn-sm" onclick="openIdeaModal()">＋ Add Idea</button>
                 <button class="btn btn-t btn-sm" id="ib-ai-btn" onclick="runIdeaAI()">✨ AI Analyse</button>
               </div>
+            </div>
+            <div id="ib-private-banner" style="display:none;" class="ib-private-banner">
+              🔒 <span id="ib-private-banner-text"></span>
             </div>
             <div class="ib-stats">
               <div class="ib-stat" id="ibstat-total" onclick="toggleStatPanel('total')"><div class="ib-stat-v" id="ib-total">0</div><div class="ib-stat-l">Total Ideas</div></div>
@@ -3828,17 +3845,50 @@ function renderIdeaBoard(){
   if(!currentProjectId) return;
   // Reset drill-down panel on re-render
   if(typeof _activeStatPanel !== 'undefined') { _activeStatPanel = null; var pw=document.getElementById('ib-stat-panel-wrap'); if(pw) pw.innerHTML=''; }
+  var p=db.projects.find(function(x){return x.id===currentProjectId;});
+  var privateMode=!!(p&&p.data&&p.data.ibPrivateMode);
+  var isStudent=sess.role==='student';
+  var isStaff=sess.role==='admin'||sess.role==='teacher';
+
+  // Update private mode toggle button (staff only)
+  var toggleWrap=document.getElementById('ib-private-toggle-wrap');
+  var toggleBtn=document.getElementById('ib-private-toggle-btn');
+  var toggleLabel=document.getElementById('ib-private-toggle-label');
+  if(toggleWrap) toggleWrap.style.display=isStaff?'':'none';
+  if(toggleBtn){
+    if(privateMode){ toggleBtn.classList.add('on'); }
+    else { toggleBtn.classList.remove('on'); }
+  }
+  if(toggleLabel) toggleLabel.textContent=privateMode?'Private Mode: ON':'Private Mode: OFF';
+
+  // Banner
+  var banner=document.getElementById('ib-private-banner');
+  var bannerText=document.getElementById('ib-private-banner-text');
+  if(banner&&bannerText){
+    if(privateMode){
+      banner.style.display='flex';
+      if(isStudent) bannerText.innerHTML='<b>Private Mode is on.</b> Your ideas are hidden from teammates until your teacher reveals them. Submit your best thinking first!';
+      else bannerText.innerHTML='<b>Private Mode is ON.</b> Students only see their own ideas. Toggle off to reveal all ideas to the class.';
+    } else {
+      banner.style.display='none';
+    }
+  }
+
   var ideas=getIdeas();
+  // For stats: students in private mode only see their own counts
+  var visibleIdeas=ideas;
+  if(privateMode&&isStudent) visibleIdeas=ideas.filter(function(n){return n.author===sess.name;});
+
   var chipEl=document.getElementById('ideas-tab-count');
   if(chipEl) chipEl.textContent=ideas.length;
   var myIdeas=ideas.filter(function(n){return n.author===sess.name;}).length;
   var contributorSet={};
-  ideas.forEach(function(n){contributorSet[n.author]=1;});
+  visibleIdeas.forEach(function(n){contributorSet[n.author]=1;});
   var contributors=Object.keys(contributorSet).length;
   var zoneSet={};
-  ideas.forEach(function(n){zoneSet[n.zone]=1;});
+  visibleIdeas.forEach(function(n){zoneSet[n.zone]=1;});
   var activeZones=Object.keys(zoneSet).length;
-  var totEl=document.getElementById('ib-total'); if(totEl) totEl.textContent=ideas.length;
+  var totEl=document.getElementById('ib-total'); if(totEl) totEl.textContent=privateMode&&isStudent?myIdeas:ideas.length;
   var ctrEl=document.getElementById('ib-contributors'); if(ctrEl) ctrEl.textContent=contributors;
   var azEl=document.getElementById('ib-zones-active'); if(azEl) azEl.textContent=activeZones;
   var myEl=document.getElementById('ib-my-ideas'); if(myEl) myEl.textContent=myIdeas;
@@ -3846,17 +3896,19 @@ function renderIdeaBoard(){
   zonesEl.innerHTML='';
   IB_ZONES.forEach(function(zone){
     var zoneNotes=ideas.filter(function(n){return n.zone===zone.id;});
+    var myZoneNotes=zoneNotes.filter(function(n){return n.author===sess.name;});
+    var hiddenCount=zoneNotes.length-myZoneNotes.length;
     var zoneEl=document.createElement('div'); zoneEl.className='ib-zone';
     var notesHtml='<div class="ib-notes" id="ib-zone-notes-'+zone.id+'">';
-    zoneNotes.forEach(function(note){
+    var notesToRender=(privateMode&&isStudent)?myZoneNotes:zoneNotes;
+    notesToRender.forEach(function(note){
       var globalIdx=ideas.indexOf(note);
       var cls=getNoteColor(note.author);
-      var canDel=sess.role==='admin'||sess.role==='teacher'||note.author===sess.name;
+      var canDel=isStaff||note.author===sess.name;
       var votes=note.votes||[];
       var hasVoted=votes.indexOf(sess.name)!==-1;
       var vCount=votes.length;
-      // Students can vote on any idea (including their own to toggle); admin/teacher see count read-only
-      var voteBtn=sess.role==='student'
+      var voteBtn=isStudent
         ?'<button class="ib-vote-btn'+(hasVoted?' voted':'')+'" onclick="voteIdea('+globalIdx+')" title="'+(hasVoted?'Remove vote':'Vote for this idea')+'">👍 <span class="vcount">'+vCount+'</span></button>'
         :(vCount>0?'<div class="ib-vote-btn" style="cursor:default;pointer-events:none;">👍 <span class="vcount">'+vCount+'</span></div>':'');
       notesHtml+='<div class="ib-note '+cls+'">'
@@ -3868,12 +3920,19 @@ function renderIdeaBoard(){
         +(canDel?'<button class="ib-note-del" onclick="deleteIdea('+globalIdx+')" title="Remove">✕</button>':'')
         +'</div>';
     });
+    // Show locked placeholder for hidden peers' ideas
+    if(privateMode&&isStudent&&hiddenCount>0){
+      notesHtml+='<div class="ib-locked-zone"><span class="lz-icon">🔒</span>'
+        +'<span>'+hiddenCount+' teammate idea'+(hiddenCount!==1?'s':'')+'<br>hidden until revealed</span>'
+        +'</div>';
+    }
     notesHtml+='<button class="ib-add-btn" onclick="openIdeaModalForZone(\'' + zone.id + '\')">'+'<span>＋</span>Add idea</button>';
     notesHtml+='</div>';
+    var displayCount=privateMode&&isStudent?myZoneNotes.length:zoneNotes.length;
     zoneEl.innerHTML=
       '<div class="ib-zone-hd"><div class="ib-zone-dot" style="background:'+zone.color+'"></div>'
       +'<div class="ib-zone-title">'+zone.label+'</div>'
-      +'<div class="ib-zone-cnt">'+zoneNotes.length+' idea'+(zoneNotes.length!==1?'s':'')+'</div></div>'
+      +'<div class="ib-zone-cnt">'+displayCount+' idea'+(displayCount!==1?'s':'')+'</div></div>'
       +'<div class="ib-zone-prompt">'+zone.prompt+'</div>'
       +notesHtml;
     zonesEl.appendChild(zoneEl);
@@ -3896,6 +3955,15 @@ function renderIdeaBoard(){
       }).join('');
     }
   }
+}
+
+function toggleIbPrivateMode(){
+  if(!currentProjectId) return;
+  var p=db.projects.find(function(x){return x.id===currentProjectId;}); if(!p) return;
+  if(!p.data) p.data={};
+  p.data.ibPrivateMode=!p.data.ibPrivateMode;
+  save(); renderIdeaBoard();
+  showIbToast(p.data.ibPrivateMode?'🔒 Private Mode ON — students see only their own ideas':'🔓 Private Mode OFF — all ideas visible');
 }
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
