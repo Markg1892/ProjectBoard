@@ -248,6 +248,13 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
 .ib-vote-btn:hover{border-color:var(--teal);color:var(--teal);}
 .ib-vote-btn.voted{background:var(--teal);border-color:var(--teal);color:#fff;}
 .ib-vote-btn .vcount{font-weight:700;min-width:8px;text-align:center;}
+.ib-note-has-img{min-width:150px;max-width:190px;}
+.ib-note-img{width:100%;border-radius:5px;margin-bottom:6px;display:block;max-height:110px;object-fit:cover;}
+.ib-img-zone{border:1.5px dashed var(--border);border-radius:7px;padding:10px 8px;text-align:center;font-size:.76rem;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+.ib-img-zone:hover{border-color:var(--teal);color:var(--teal);}
+.ib-img-preview{position:relative;margin-top:4px;}
+.ib-img-preview img{width:100%;border-radius:6px;max-height:120px;object-fit:cover;display:block;}
+.ib-img-remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:20px;text-align:center;padding:0;}
 .ib-private-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(90deg,#FFF3CD,#FFF9E6);border:1.5px solid #F5C518;border-radius:9px;margin-bottom:14px;font-size:.82rem;color:#7A5C00;}
 .ib-private-banner b{font-weight:700;}
 .ib-private-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-size:.78rem;font-weight:600;color:var(--navy);padding:4px 10px;border:1.5px solid var(--border);border-radius:20px;background:#fff;transition:all .15s;}
@@ -1463,6 +1470,15 @@ td input:focus,td select:focus{outline:none;background:#f0f8f8;border:1px solid 
         <option value="2">⚠️ Challenges &amp; Risks</option>
         <option value="free">🌐 Free Brainstorm</option>
       </select>
+    </div>
+    <div class="fg">
+      <label>Image <span style="font-weight:400;opacity:.55">(optional)</span></label>
+      <input type="file" id="idea-img-input" accept="image/*" style="display:none" onchange="handleIdeaImgSelect(this)">
+      <div id="idea-img-zone" class="ib-img-zone" onclick="document.getElementById('idea-img-input').click()">📎 Upload image or photo</div>
+      <div id="idea-img-preview" class="ib-img-preview" style="display:none;">
+        <img id="idea-img-prev-img" alt="preview">
+        <button class="ib-img-remove" onclick="clearIdeaImg()" title="Remove image">✕</button>
+      </div>
     </div>
     <div id="idea-private-wrap" style="display:none;margin-top:10px;">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;color:var(--navy);font-weight:600;">
@@ -3923,8 +3939,10 @@ function renderIdeaBoard(){
         ?'<button class="ib-vote-btn'+(hasVoted?' voted':'')+'" onclick="voteIdea('+globalIdx+')" title="'+(hasVoted?'Remove vote':'Vote for this idea')+'">👍 <span class="vcount">'+vCount+'</span></button>'
         :(vCount>0?'<div class="ib-vote-btn" style="cursor:default;pointer-events:none;">👍 <span class="vcount">'+vCount+'</span></div>':'');
       var privateTag=note.private?'<span title="Private idea" style="font-size:.65rem;opacity:.6;margin-left:4px;">🔒</span>':'';
-      notesHtml+='<div class="ib-note '+cls+'">'
-        +escHtml(note.text)
+      var hasImg=!!note.img;
+      notesHtml+='<div class="ib-note '+cls+(hasImg?' ib-note-has-img':'')+'">'
+        +(hasImg?'<img class="ib-note-img" src="'+note.img+'" alt="idea image">':'')
+        +(note.text?escHtml(note.text):'')
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
         +'<div class="ib-note-au" style="margin-top:0;">'+escHtml(note.author)+privateTag+'</div>'
         +voteBtn
@@ -3980,15 +3998,46 @@ function toggleIbPrivateMode(){
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+var _ideaImgData=null;
+
 function _prepIdeaModal(){
   var chk=document.getElementById('idea-private-chk');
   var wrap=document.getElementById('idea-private-wrap');
   var sub=document.getElementById('idea-modal-sub');
   if(chk) chk.checked=false;
   if(wrap) wrap.style.display=sess.role==='student'?'block':'none';
-  if(sub) sub.textContent=sess.role==='student'
-    ?'Post a sticky note to the IdeaBoard.'
-    :'Post a sticky note to the IdeaBoard — visible to your whole team.';
+  if(sub) sub.textContent='Add text, an image, or both.';
+  clearIdeaImg();
+}
+
+function handleIdeaImgSelect(input){
+  var file=input.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=400;
+      var ratio=Math.min(MAX/img.width, MAX/img.height, 1);
+      var canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*ratio);
+      canvas.height=Math.round(img.height*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      _ideaImgData=canvas.toDataURL('image/jpeg',0.75);
+      var prev=document.getElementById('idea-img-prev-img');
+      if(prev) prev.src=_ideaImgData;
+      document.getElementById('idea-img-zone').style.display='none';
+      document.getElementById('idea-img-preview').style.display='block';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearIdeaImg(){
+  _ideaImgData=null;
+  var inp=document.getElementById('idea-img-input'); if(inp) inp.value='';
+  var zone=document.getElementById('idea-img-zone'); if(zone) zone.style.display='';
+  var prev=document.getElementById('idea-img-preview'); if(prev) prev.style.display='none';
 }
 function openIdeaModal(){
   document.getElementById('idea-txt').value='';
@@ -4006,13 +4055,13 @@ function openIdeaModalForZone(zoneId){
 }
 function submitIdea(){
   var txt=document.getElementById('idea-txt').value.trim();
-  if(!txt){showIbToast('Please enter an idea.');return;}
+  if(!txt&&!_ideaImgData){showIbToast('Please add text or an image.');return;}
   var zone=document.getElementById('idea-zone').value;
   var chk=document.getElementById('idea-private-chk');
   var isPrivate=chk&&chk.checked&&sess.role==='student';
-  saveIdea({text:txt,zone:zone,author:sess.name,ts:Date.now(),private:isPrivate||undefined});
+  saveIdea({text:txt,zone:zone,author:sess.name,ts:Date.now(),private:isPrivate||undefined,img:_ideaImgData||undefined});
   closeModals(); renderIdeaBoard();
-  showIbToast(isPrivate?'🔒 Private idea saved — only you and your teacher can see it.':'💡 Idea posted to the board!');
+  showIbToast(isPrivate?'🔒 Private idea saved — only you and your teacher can see it.':'💡 Idea posted!');
 }
 
 // ── Stat card drill-down panels ───────────────────────────────────────────
