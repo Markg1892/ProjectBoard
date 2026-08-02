@@ -2682,7 +2682,8 @@ function captureData(){
     prod:td('tb-prod'),bud:td('tb-bud'),risk:td('tb-risk'),act:td('tb-act'),chg:td('tb-chg'),
     sched:sr, kanban:{todo:kd('todo'),create:kd('create'),done1:kd('done1'),check:kd('check'),done2:kd('done2'),accepted:kd('accepted')},
     substages:JSON.parse(JSON.stringify(substages)),
-    ideaboard:(function(){ var p=db.projects.find(function(x){return x.id===currentProjectId;}); return(p&&p.data&&p.data.ideaboard)?p.data.ideaboard:[]; })()
+    ideaboard:(function(){ var p=db.projects.find(function(x){return x.id===currentProjectId;}); return(p&&p.data&&p.data.ideaboard)?p.data.ideaboard:[]; })(),
+    ibPrivateMode:(function(){ var p=db.projects.find(function(x){return x.id===currentProjectId;}); return!!(p&&p.data&&p.data.ibPrivateMode); })()
   };
 }
 
